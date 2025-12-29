@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Timeline Interattiva Diritti Umani</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; overflow-x: auto; }
+        h1 { text-align: center; color: #2c3e50; margin-top: 20px; }
+        
+        #chart-container {
+            position: relative;
+            width: 2600px; /* Un po' più largo per i nuovi testi */
+            height: 700px;
+            margin: 50px;
+            border-left: 2px solid #333;
+            border-bottom: 2px solid #333;
+        }
+
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+        /* IL NODO: Ora ha una transizione per l'espansione */
+        .node {
+            position: absolute;
+            z-index: 2;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #3498db;
+            font-size: 14px;
+            width: 180px; /* Larghezza fissa iniziale */
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden; /* Nasconde la descrizione quando è chiuso */
+        }
+
+        /* Effetto Espansione al passaggio del mouse */
+        .node:hover {
+            width: 300px; /* Si allarga */
+            z-index: 100; /* Passa sopra a tutto */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            background: #ffffff;
+        }
+
+        .node h3 { margin: 0; font-size: 14px; color: #2980b9; }
+
+        /* LA DESCRIZIONE: Nascosta di default */
+        .description {
+            max-height: 0;
+            opacity: 0;
+            font-size: 12px;
+            font-weight: normal;
+            color: #555;
+            margin-top: 0;
+            transition: all 0.4s ease;
+            line-height: 1.4;
+        }
+
+        .node:hover .description {
+            max-height: 200px; /* Si apre verso il basso */
+            opacity: 1;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .axis-x-label { position: absolute; bottom: -30px; font-size: 12px; color: #666; transform: translateX(-50%); }
+
+        /* Colori Rami */
+        .branch-civil { border-color: #e74c3c; }
+        .branch-econ { border-color: #2ecc71; }
+        .branch-genere { border-color: #9b59b6; }
+        .branch-ambiente { border-color: #16a085; }
+    </style>
+</head>
+<body>
+
+    <h1>Evoluzione dei Diritti Umani (1948 - Oggi)</h1>
+    <p style="text-align: center; color: #666;">Passa il mouse sopra i nodi per leggere i dettagli</p>
+
+    <div id="chart-container">
+        <svg id="lines"></svg>
+    </div>
+
+    <script>
+        const data = [
+            { 
+                id: "udhr", year: 1948, y: 0, 
+                label: "Dichiarazione Universale (UDHR)", 
+                desc: "Il documento fondamentale che stabilisce per la prima volta i diritti umani universali da proteggere.",
+                parent: null, class: "" 
+            },
+            { 
+                id: "iccpr", year: 1966, y: 120, 
+                label: "Patto Diritti Civili e Politici", 
+                desc: "Protegge le libertà fondamentali: diritto alla vita, libertà di espressione e di religione.",
+                parent: "udhr", class: "branch-civil" 
+            },
+            { 
+                id: "icescr", year: 1966, y: -120, 
+                label: "Patto Diritti Econ. e Sociali", 
+                desc: "Si concentra su lavoro, istruzione e salute come diritti inalienabili.",
+                parent: "udhr", class: "branch-econ" 
+            },
+            { 
+                id: "cedaw", year: 1979, y: 220, 
+                label: "Diritti delle Donne (CEDAW)", 
+                desc: "Definita come la 'Carta dei diritti delle donne', mira a eliminare ogni discriminazione.",
+                parent: "iccpr", class: "branch-genere" 
+            },
+            { 
+                id: "crc", year: 1989, y: -220, 
+                label: "Diritti dell'Infanzia (CRC)", 
+                desc: "Il trattato sui diritti umani più ratificato al mondo. Protegge i minori di 18 anni.",
+                parent: "icescr", class: "branch-econ" 
+            },
+            { 
+                id: "env", year: 2022, y: 0, 
+                label: "Diritto all'Ambiente", 
+                desc: "L'Assemblea Generale ONU riconosce l'ambiente pulito e sano come un diritto umano universale.",
+                parent: "udhr", class: "branch-ambiente" 
+            },
+             { 
+                id: "env2", year: 2024, y: 0, 
+                label: "Diritto all'Ambiente2", 
+                desc: "L'Assemblea Generale ONU riconosce l'ambiente pulito e sano come un diritto umano universale.",
+                parent: "env", class: "branch-ambiente" 
+            }
+            
+        ];
+
+        const container = document.getElementById('chart-container');
+        const svg = document.getElementById('lines');
+        const startYear = 1945;
+        const pixelsPerYear = 35;
+        const centerY = 350;
+
+        function draw() {
+            data.forEach(item => {
+                const xPos = (item.year - startYear) * pixelsPerYear;
+                const yPos = centerY - item.y;
+
+                // Creazione del Nodo con Titolo e Descrizione
+                const div = document.createElement('div');
+                div.className = `node ${item.class}`;
+                div.style.left = xPos + 'px';
+                div.style.top = yPos + 'px';
+                div.innerHTML = `
+                    <h3>${item.year}: ${item.label}</h3>
+                    <div class="description">${item.desc}</div>
+                `;
+                container.appendChild(div);
+
+                // Etichetta anno
+                const yearLabel = document.createElement('div');
+                yearLabel.className = 'axis-x-label';
+                yearLabel.style.left = xPos + 'px';
+                yearLabel.innerHTML = item.year;
+                container.appendChild(yearLabel);
+
+                // Linea di collegamento
+                if (item.parent) {
+                    const parent = data.find(d => d.id === item.parent);
+                    const parentX = (parent.year - startYear) * pixelsPerYear;
+                    const parentY = centerY - parent.y;
+
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    // Creiamo una linea curva (Bezier) per un effetto più elegante
+                    const d = `M ${parentX + 180} ${parentY + 20} C ${parentX + 250} ${parentY + 20}, ${xPos - 50} ${yPos + 20}, ${xPos} ${yPos + 20}`;
+                    line.setAttribute("d", d);
+                    line.setAttribute("stroke", "#bdc3c7");
+                    line.setAttribute("fill", "transparent");
+                    line.setAttribute("stroke-width", "2");
+                    svg.appendChild(line);
+                }
+            });
+        }
+
+        draw();
+    </script>
+</body>
+</html>
