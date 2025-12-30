@@ -1,180 +1,498 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Timeline Interattiva Diritti Umani</title>
+    <title>Human Rights Evolution - Final English</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; overflow-x: auto; }
-        h1 { text-align: center; color: #2c3e50; margin-top: 20px; }
+        :root {
+            --grid-color: rgba(200, 210, 220, 0.25);
+            --axis-color: #2d3748;
+            --hist-color: #dd6b20; /* Dark Orange for History */
+            
+            /* Updated Branch Palette */
+            --c-root: #2d3748;
+            --c-civil: #e53e3e;      /* Red (Civil) */
+            --c-econ: #d69e2e;       /* WARM YELLOW / MUSTARD (Economic) */
+            --c-women: #d53f8c;      /* Pink (Women) */
+            --c-coll: #c05621;       /* Rust (Collective) */
+            --c-social: #3182ce;     /* Blue (Social) */
+            --c-env: #38a169;        /* GREEN (Environment) */
+        }
+
+        /* Base Layout */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; }
         
+        header { 
+            height: 50px; display: flex; align-items: center; justify-content: center; 
+            background: rgba(255, 255, 255, 0.95); 
+            border-bottom: 1px solid #e2e8f0; z-index: 1100; position: relative; 
+            backdrop-filter: blur(5px);
+        }
+        h1 { font-size: 1.2rem; color: #1a365d; margin: 0; letter-spacing: 0.5px; font-weight: 700; }
+        
+        /* Legend */
+        #legend {
+            position: fixed; top: 60px; right: 20px; background: rgba(255,255,255,0.98);
+            padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            z-index: 1000; font-size: 11px; border: 1px solid #cbd5e0; min-width: 180px;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 6px; }
+        .legend-color { width: 12px; height: 12px; margin-right: 10px; border-radius: 2px; }
+        
+        .legend-divider { margin: 10px 0; border-top: 1px solid #e2e8f0; }
+        .legend-sub { font-size: 10px; color: #555; font-style: italic; margin-left: 24px; margin-bottom: 4px; }
+        .legend-hist-line { width: 16px; border-top: 3px dashed var(--hist-color); margin-right: 10px; }
+        .legend-gray-line { width: 16px; border-top: 1px dashed #718096; margin-right: 10px; }
+
+        /* Legend Squares for Document Types - Enhanced Visibility */
+        .legend-square { width: 14px; height: 14px; margin-right: 10px; border: 1px solid #a0aec0; }
+
+        /* Viewport & Scroll */
+        #viewport { 
+            width: 100vw; height: calc(100vh - 50px); 
+            overflow-x: scroll; overflow-y: hidden; 
+            position: relative; scroll-behavior: smooth; 
+        }
+        #viewport::-webkit-scrollbar { height: 12px; }
+        #viewport::-webkit-scrollbar-track { background: #f1f5f9; }
+        #viewport::-webkit-scrollbar-thumb { background: #64748b; border-radius: 6px; border: 3px solid #f1f5f9; }
+
+        /* Chart Container */
         #chart-container {
-            position: relative;
-            width: 2600px; /* Un po' più largo per i nuovi testi */
-            height: 700px;
-            margin: 50px;
-            border-left: 2px solid #333;
-            border-bottom: 2px solid #333;
+            position: relative; width: 6800px; height: 650px; 
+            margin: 50px 0 60px 0; /* Margins for axes */
+            background-color: white;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 25px 25px; 
+            border-top: 2px solid var(--axis-color); border-bottom: 2px solid var(--axis-color);
         }
 
         svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 
-        /* IL NODO: Ora ha una transizione per l'espansione */
+        /* --- NODE STYLES --- */
         .node {
-            position: absolute;
-            z-index: 2;
-            padding: 10px 15px;
-            border-radius: 8px;
+            position: absolute; z-index: 20; 
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
+            cursor: pointer; overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* MAIN TYPE */
+        .node.type-main {
+            width: 70px; height: 34px;
+            border-radius: 4px;
+            border-left: 5px solid; 
+            border-top: 1px solid #cbd5e0; 
+            border-right: 1px solid #cbd5e0; 
+            border-bottom: 1px solid #cbd5e0;
+        }
+        .node.type-main .sigla { font-weight: 700; font-size: 11px; color: #2d3748; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+
+        /* Visual Subtypes - Accentuated */
+        .node.type-main.subtype-conv { 
+            background: #ffffff; 
+            border-bottom: 2px solid #718096; /* Darker grey border for Convention */
+        }
+        .node.type-main.subtype-decl { 
+            background: #fff9c4; /* Distinct Cream/Yellowish */
+            border-bottom: 3px double #d69e2e; /* Double border matching econ/gold tones */
+            border-bottom-color: #a0aec0;
+        }
+        .node.type-main.subtype-other { 
+            background: #e2e8f0; /* Visible Grey */
+            border-bottom: 2px dotted #4a5568; 
+        }
+
+        /* MINOR TYPE */
+        .node.type-minor {
+            width: 14px; height: 14px;
+            border-radius: 3px;
+            border: 2px solid; 
             background: white;
-            border: 2px solid #3498db;
-            font-size: 14px;
-            width: 180px; /* Larghezza fissa iniziale */
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden; /* Nasconde la descrizione quando è chiuso */
+            padding: 0;
+        }
+        .node.type-minor .sigla { display: none; }
+
+        /* --- EXPANSION LOGIC --- */
+        .node .extended-content { display: none; width: 100%; opacity: 0; transition: opacity 0.2s ease; }
+        
+        .node.type-main:hover {
+            width: 400px; height: auto; min-height: 100px;
+            padding: 16px; z-index: 999;
+            justify-content: flex-start; align-items: flex-start;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            border-width: 1px; border-left-width: 6px;
+            background: white; border-bottom-style: solid;
+            transform: translateY(-4px);
+        }
+        .node.type-main:hover .sigla { display: none; }
+        .node.type-main:hover .extended-content { display: block; opacity: 1; }
+
+        .node.type-minor.expanded {
+            width: 380px; height: auto; min-height: 90px;
+            padding: 16px; z-index: 1000;
+            justify-content: flex-start; align-items: flex-start;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            border-radius: 4px;
+            border-width: 1px; border-left-width: 6px; 
+            cursor: default;
+        }
+        .node.type-minor.expanded .extended-content { display: block; opacity: 1; }
+
+        .node.type-minor:not(.expanded):hover {
+            transform: scale(1.3); box-shadow: 0 0 10px rgba(0,0,0,0.2); z-index: 30;
         }
 
-        /* Effetto Espansione al passaggio del mouse */
-        .node:hover {
-            width: 300px; /* Si allarga */
-            z-index: 100; /* Passa sopra a tutto */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            background: #ffffff;
+        .extended-content h3 { margin: 0 0 8px 0; font-size: 14px; color: #1a365d; line-height: 1.3; font-weight: 700; }
+        .extended-content .info-line { font-size: 10px; font-weight: 800; color: #718096; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .extended-content .description { font-size: 12px; color: #4a5568; margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7; line-height: 1.6; }
+
+        /* --- INTERACTIVE HISTORY EVENTS --- */
+        .bg-event-line { 
+            position: absolute; top: 0; width: 1px; height: 100%; 
+            border-left: 3px dashed var(--hist-color); 
+            z-index: 1; opacity: 0.5; pointer-events: none; 
         }
-
-        .node h3 { margin: 0; font-size: 14px; color: #2980b9; }
-
-        /* LA DESCRIZIONE: Nascosta di default */
-        .description {
-            max-height: 0;
-            opacity: 0;
-            font-size: 12px;
-            font-weight: normal;
-            color: #555;
-            margin-top: 0;
-            transition: all 0.4s ease;
-            line-height: 1.4;
+        .bg-event-label { 
+            position: absolute; top: 15px; left: 8px; 
+            color: var(--hist-color); font-size: 11px; font-weight: 700; 
+            background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap;
+            cursor: pointer; pointer-events: auto; 
+            transition: transform 0.2s, background 0.2s;
+            border: 1px solid transparent;
         }
+        .bg-event-label:hover { transform: scale(1.05); background: #fff; border-color: var(--hist-color); }
 
-        .node:hover .description {
-            max-height: 200px; /* Si apre verso il basso */
-            opacity: 1;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
+        .hist-popover {
+            position: absolute; top: 45px; left: 10px; width: 280px;
+            background: #fff; border: 1px solid var(--hist-color); border-left-width: 5px;
+            border-radius: 4px; padding: 12px;
+            box-shadow: 0 8px 20px rgba(221, 107, 32, 0.2);
+            z-index: 2000; display: none; 
+            pointer-events: auto;
         }
+        .hist-popover.active { display: block; animation: fadeIn 0.3s ease; }
+        .hist-popover h4 { margin: 0 0 5px 0; color: #c05621; font-size: 13px; }
+        .hist-popover p { margin: 0; font-size: 11px; line-height: 1.5; color: #4a5568; }
 
-        .axis-x-label { position: absolute; bottom: -30px; font-size: 12px; color: #666; transform: translateX(-50%); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Colori Rami */
-        .branch-civil { border-color: #e74c3c; }
-        .branch-econ { border-color: #2ecc71; }
-        .branch-genere { border-color: #9b59b6; }
-        .branch-ambiente { border-color: #16a085; }
+        /* Year Guidelines (Grey) */
+        .year-guideline {
+            position: absolute; top: 0; bottom: 0; width: 1px;
+            border-left: 1px dashed #718096; opacity: 0.4; z-index: 2; 
+            pointer-events: none;
+        }
+        .year-guideline-label {
+            position: absolute; left: -15px; width: 30px;
+            text-align: center; font-size: 10px; font-weight: bold;
+            color: #4a5568; background: rgba(255,255,255,0.9);
+            border-radius: 3px; padding: 2px 0; z-index: 3;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .year-guideline-label.top { top: -28px; }
+        .year-guideline-label.bot { bottom: -28px; }
+
+        /* Axis Labels */
+        .axis-label { position: absolute; font-size: 11px; font-weight: bold; color: #94a3b8; transform: translateX(-50%); z-index: 5; }
+        .axis-top { top: -25px; }
+        .axis-bot { bottom: -25px; }
+
+        /* Utilities */
+        .root { color: var(--c-root); }
+        .branch-civil { color: var(--c-civil); }
     </style>
 </head>
 <body>
 
-    <h1>Evoluzione dei Diritti Umani (1948 - Oggi)</h1>
-    <p style="text-align: center; color: #666;">Passa il mouse sopra i nodi per leggere i dettagli</p>
+    <header><h1>Evolution of Human Rights (1945 - 2025)</h1></header>
 
-    <div id="chart-container">
-        <svg id="lines"></svg>
+    <div id="legend">
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-civil)"></div> Civil & Political</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-econ)"></div> Economic & Social</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-women)"></div> Gender / Women</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-coll)"></div> Collective Rights</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-social)"></div> Social Rights</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-env)"></div> Environment</div>
+        
+        <div class="legend-divider"></div>
+        <div class="legend-item"><strong>Line Legend:</strong></div>
+        <div class="legend-item"><div class="legend-hist-line"></div> Historical Event (Click!)</div>
+        <div class="legend-item"><div class="legend-gray-line"></div> Document Year</div>
+
+        <div class="legend-divider"></div>
+        <div class="legend-item"><strong>Document Type:</strong></div>
+        <div class="legend-item"><div class="legend-square" style="background:white; border-bottom:2px solid #718096;"></div> Convention</div>
+        <div class="legend-item"><div class="legend-square" style="background:#fff9c4; border-bottom:3px double #d69e2e;"></div> Declaration</div>
+        <div class="legend-item"><div class="legend-square" style="background:#e2e8f0; border-bottom:2px dotted #4a5568;"></div> Other</div>
+    </div>
+
+    <div id="viewport">
+        <div id="chart-container">
+            <svg id="lines"></svg>
+        </div>
     </div>
 
     <script>
+        const colorMap = {
+            "root": "#2d3748", "branch-civil": "#e53e3e", "branch-econ": "#d69e2e",
+            "branch-women": "#d53f8c", "branch-coll": "#dd6b20", "branch-social": "#3182ce", "branch-env": "#38a169"
+        };
+
         const data = [
-            { 
-                id: "udhr", year: 1948, y: 0, 
-                label: "Dichiarazione Universale (UDHR)", 
-                desc: "Il documento fondamentale che stabilisce per la prima volta i diritti umani universali da proteggere.",
-                parent: null, class: "" 
-            },
-            { 
-                id: "iccpr", year: 1966, y: 120, 
-                label: "Patto Diritti Civili e Politici", 
-                desc: "Protegge le libertà fondamentali: diritto alla vita, libertà di espressione e di religione.",
-                parent: "udhr", class: "branch-civil" 
-            },
-            { 
-                id: "icescr", year: 1966, y: -120, 
-                label: "Patto Diritti Econ. e Sociali", 
-                desc: "Si concentra su lavoro, istruzione e salute come diritti inalienabili.",
-                parent: "udhr", class: "branch-econ" 
-            },
-            { 
-                id: "cedaw", year: 1979, y: 220, 
-                label: "Diritti delle Donne (CEDAW)", 
-                desc: "Definita come la 'Carta dei diritti delle donne', mira a eliminare ogni discriminazione.",
-                parent: "iccpr", class: "branch-genere" 
-            },
-            { 
-                id: "crc", year: 1989, y: -220, 
-                label: "Diritti dell'Infanzia (CRC)", 
-                desc: "Il trattato sui diritti umani più ratificato al mondo. Protegge i minori di 18 anni.",
-                parent: "icescr", class: "branch-econ" 
-            },
-            { 
-                id: "env", year: 2022, y: 0, 
-                label: "Diritto all'Ambiente", 
-                desc: "L'Assemblea Generale ONU riconosce l'ambiente pulito e sano come un diritto umano universale.",
-                parent: "udhr", class: "branch-ambiente" 
-            },
-             { 
-                id: "env2", year: 2024, y: 0, 
-                label: "Diritto all'Ambiente2", 
-                desc: "L'Assemblea Generale ONU riconosce l'ambiente pulito e sano come un diritto umano universale.",
-                parent: "env", class: "branch-ambiente" 
-            }
-            
+  { "id": "unc", "sigla": "UNC", "type": "main", "year": 1945, "y": 0, "class": "root", "label": "United Nations Charter", "desc": "The birth of modern international law. Establishes human rights as the foundation for global peace.", "parent": null },
+  { "id": "udhr", "sigla": "UDHR", "type": "main", "year": 1948, "y": 0, "class": "root", "label": "Universal Declaration of Human Rights", "desc": "The cornerstone. The first global expression of inalienable rights for every human being.", "parent": "unc" },
+  
+  { "id": "node_2", "sigla": "DOC", "type": "main", "year": 1960, "y": 135, "class": "branch-coll", "label": "Declaration on Independence to Colonial Countries", "desc": "The 'Magna Carta' of decolonization. Subjection of peoples constitutes a denial of fundamental human rights.", "parent": "udhr" },
+  { "id": "A_RES_1514(XV)", "sigla": "Res. 1514", "type": "minor", "year": 1960, "y": 135, "class": "branch-coll", "label": "General Assembly Resolution 1514", "desc": "Operational resolution accelerating independence for over 80 colonial nations.", "parent": "node_2" },
+  
+  // YELLOW BRANCH (ECONOMIC) - LINEAR
+  { "id": "node_27", "sigla": "Res. 1803", "type": "minor", "year": 1962, "y": -45, "class": "branch-econ", "label": "Permanent Sovereignty over Natural Resources", "desc": "The right of peoples to freely use their natural wealth and resources.", "parent": "udhr" },
+  
+  // RED BRANCH (CIVIL) - LINEAR
+  { "id": "node_28", "sigla": "Res. 1904", "type": "minor", "year": 1963, "y": 45, "class": "branch-civil", "label": "Declaration on Elimination of Racial Discrimination", "desc": "First organized UN response to apartheid and racial discrimination.", "parent": "udhr" },
+  
+  { "id": "ICERD", "sigla": "ICERD", "type": "main", "year": 1965, "y": 45, "class": "branch-civil", "label": "Convention on Elimination of Racial Discrimination", "desc": "First binding treaty: obliges states to eliminate racial discrimination in all forms.", "parent": "node_28" },
+  
+  { "id": "iccpr", "sigla": "ICCPR", "type": "main", "year": 1966, "y": 45, "class": "branch-civil", "label": "International Covenant on Civil and Political Rights", "desc": "Protects 'classic' rights: life, speech, voting, and fair trial.", "parent": "ICERD" },
+  
+  { "id": "icescr", "sigla": "ICESCR", "type": "main", "year": 1966, "y": -45, "class": "branch-econ", "label": "Covenant on Economic, Social and Cultural Rights", "desc": "Guarantees 'positive' rights: work, health, education, and adequate standard of living.", "parent": "node_27" },
+  
+  { "id": "ICCPR-OP1", "sigla": "OP1-ICCPR", "type": "main", "year": 1966, "y": 45, "class": "branch-civil", "label": "Optional Protocol to ICCPR", "desc": "Allows individuals to file complaints against their State for rights violations.", "parent": "iccpr" },
+  
+  // BLUE BRANCH (SOCIAL) - Now branching from YELLOW (ICESCR)
+  { "id": "node_29", "sigla": "Res. 2542", "type": "minor", "year": 1969, "y": -90, "class": "branch-social", "label": "Declaration on Social Progress", "desc": "Social development as a means for human dignity.", "parent": "icescr" },
+  { "id": "node_30", "sigla": "Res. 2856", "type": "minor", "year": 1971, "y": -90, "class": "branch-social", "label": "Rights of Mentally Retarded Persons", "desc": "Early step for rights in the context of mental disability.", "parent": "node_29" },
+  
+  { "id": "node_31", "sigla": "DOC", "type": "minor", "year": 1974, "y": -45, "class": "branch-econ", "label": "Declaration on Eradication of Hunger", "desc": "Inalienable right of every man, woman, and child to be free from hunger.", "parent": "icescr" },
+  
+  // PINK BRANCH (WOMEN) - Now branching from RED (ICCPR)
+  { "id": "node_32", "sigla": "Res. 3318", "type": "minor", "year": 1974, "y": 90, "class": "branch-women", "label": "Protection of Women in Emergency", "desc": "Focus on women and children during armed conflicts.", "parent": "iccpr" },
+  
+  { "id": "node_35", "sigla": "Res. 3452", "type": "minor", "year": 1975, "y": 45, "class": "branch-civil", "label": "Declaration against Torture", "desc": "Moral condemnation preparing the ground for the 1984 convention.", "parent": "ICCPR-OP1" },
+  
+  { "id": "node_34", "sigla": "Res. 3447", "type": "main", "year": 1975, "y": -90, "class": "branch-social", "label": "Declaration on Rights of Disabled Persons", "desc": "Recognition of civil and political rights for persons with disabilities.", "parent": "node_30" },
+  
+  { "id": "node_33", "sigla": "Res. 3384", "type": "minor", "year": 1975, "y": 135, "class": "branch-coll", "label": "Use of Scientific Progress", "desc": "Science must serve peace, not destruction.", "parent": "A_RES_1514(XV)" },
+  
+  { "id": "node_36", "sigla": "DOC", "type": "minor", "year": 1978, "y": 45, "class": "branch-civil", "label": "Declaration on Race", "desc": "Rejects scientific racism and theories of racial superiority.", "parent": "node_35" },
+  
+  { "id": "CEDAW", "sigla": "CEDAW", "type": "main", "year": 1979, "y": 90, "class": "branch-women", "label": "Convention on Discrimination against Women", "desc": "The 'Bill of Rights for Women'. Real equality, not just formal.", "parent": "node_32" },
+  
+  { "id": "A_RES_36_55", "sigla": "Res. 36/55", "type": "main", "year": 1981, "y": 45, "class": "branch-civil", "label": "Declaration on Intolerance and Religion", "desc": "Defends freedom of thought, conscience, and religion.", "parent": "node_36" },
+  
+  { "id": "A_RES_37_194", "sigla": "Res. 37/194", "type": "minor", "year": 1982, "y": 45, "class": "branch-civil", "label": "Medical Ethics", "desc": "Prohibits medical personnel from participating in torture.", "parent": "A_RES_36_55" },
+  { "id": "E_RES_1984_50", "sigla": "Res. 84/50", "type": "minor", "year": 1984, "y": 45, "class": "branch-civil", "label": "Death Penalty Safeguards", "desc": "Strict limits to protect those facing the death penalty.", "parent": "A_RES_37_194" },
+  { "id": "A_RES_39_11", "sigla": "Res. 39/11", "type": "minor", "year": 1984, "y": 135, "class": "branch-coll", "label": "Right of Peoples to Peace", "desc": "Fundamental obligation of every State to preserve peace.", "parent": "node_33" },
+  
+  { "id": "CAT", "sigla": "CAT", "type": "main", "year": 1984, "y": 45, "class": "branch-civil", "label": "Convention against Torture", "desc": "Absolute ban on torture, with no exceptions for war or emergency.", "parent": "E_RES_1984_50" },
+  
+  { "id": "A_RES_40_32", "sigla": "Res. 40/32", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", "label": "Independence of Judiciary", "desc": "Core principles to protect judges from political pressure.", "parent": "CAT" },
+  { "id": "A_RES_40_144", "sigla": "Res. 40/144", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", "label": "Rights of Non-Nationals", "desc": "Human rights belong to the person, not the passport.", "parent": "A_RES_40_32" },
+  { "id": "node_9", "sigla": "DOC", "type": "minor", "year": 1986, "y": 135, "class": "branch-coll", "label": "Declaration on Development", "desc": "Towards the recognition of development as a right.", "parent": "A_RES_39_11" },
+  
+  { "id": "A_RES_41_128", "sigla": "Res. 41/128", "type": "main", "year": 1986, "y": 135, "class": "branch-coll", "label": "Declaration on the Right to Development", "desc": "Development is an inalienable human right; cooperation is mandatory.", "parent": "node_9" },
+  
+  { "id": "A_RES_43_173", "sigla": "Res. 43/173", "type": "minor", "year": 1988, "y": 45, "class": "branch-civil", "label": "Protection of Detainees", "desc": "Humane treatment for anyone deprived of liberty.", "parent": "A_RES_40_144" },
+  { "id": "ICCPR-OP2", "sigla": "OP2-ICCPR", "type": "minor", "year": 1989, "y": 45, "class": "branch-civil", "label": "Second Optional Protocol to ICCPR", "desc": "Aims for the total abolition of the death penalty.", "parent": "A_RES_43_173" },
+  
+  { "id": "CRC", "sigla": "CRC", "type": "main", "year": 1989, "y": -90, "class": "branch-social", "label": "Convention on the Rights of the Child", "desc": "Children are subjects of rights, not just objects of protection.", "parent": "node_34" },
+  
+  { "id": "node_45", "sigla": "DOC", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", "label": "Role of Lawyers", "desc": "Access to lawyers is vital for the defense of rights.", "parent": "ICCPR-OP2" },
+  
+  { "id": "CMW", "sigla": "CMW", "type": "main", "year": 1990, "y": -45, "class": "branch-econ", "label": "Convention on Migrant Workers", "desc": "Rights for migrant workers and their families.", "parent": "node_31" },
+  
+  { "id": "A_RES_45_111", "sigla": "Res. 45/111", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", "label": "Treatment of Prisoners", "desc": "Basic principles for prison treatment.", "parent": "node_45" },
+  { "id": "A_RES_47_135", "sigla": "Res. 47/135", "type": "minor", "year": 1992, "y": 135, "class": "branch-coll", "label": "Rights of Minorities", "desc": "Protecting minority identity for social stability.", "parent": "A_RES_41_128" },
+  
+  // GREEN BRANCH (ENV) - Branching from YELLOW (node_31 - 1974) to be "before Rio"
+  { "id": "A_CONF.151_26", "sigla": "Rio Decl.", "type": "main", "year": 1992, "y": -135, "class": "branch-env", "label": "Rio Declaration on Environment", "desc": "Economic development and the health of the planet are linked.", "parent": "node_31" },
+  
+  { "id": "A_RES_47_133", "sigla": "Res. 47/133", "type": "minor", "year": 1992, "y": 45, "class": "branch-civil", "label": "Protection from Enforced Disappearance", "desc": "Political response to enforced disappearances.", "parent": "A_RES_45_111" },
+  
+  { "id": "A_RES_48_104", "sigla": "Res. 48/104", "type": "main", "year": 1993, "y": 90, "class": "branch-women", "label": "Declaration on Violence against Women", "desc": "Violence against women is a public human rights violation.", "parent": "CEDAW" },
+  
+  { "id": "A_CONF.157_23", "sigla": "Vienna", "type": "minor", "year": 1993, "y": 45, "class": "branch-civil", "label": "Vienna Declaration", "desc": "Human rights are universal, indivisible, and interdependent.", "parent": "A_RES_47_133" },
+  
+  { "id": "node_52", "sigla": "DOC", "type": "main", "year": 1997, "y": -90, "class": "branch-social", "label": "Declaration on Human Genome", "desc": "The human genome is the heritage of humanity.", "parent": "CRC" },
+  
+  { "id": "A_RES_53_144", "sigla": "Res. 53/144", "type": "minor", "year": 1998, "y": 45, "class": "branch-civil", "label": "Human Rights Defenders", "desc": "Protects activists who defend rights.", "parent": "A_CONF.157_23" },
+  { "id": "OP-CEDAW", "sigla": "OP-CEDAW", "type": "minor", "year": 1999, "y": 45, "class": "branch-civil", "label": "Optional Protocol to CEDAW", "desc": "Individual complaints for women's rights violations.", "parent": "A_RES_53_144" },
+  { "id": "node_56", "sigla": "DOC", "type": "minor", "year": 2001, "y": 135, "class": "branch-coll", "label": "Declaration on Cultural Diversity", "desc": "Cultural diversity is as necessary as biodiversity.", "parent": "A_RES_47_135" },
+  { "id": "node_17", "sigla": "OP-CAT", "type": "minor", "year": 2002, "y": 45, "class": "branch-civil", "label": "Optional Protocol CAT", "desc": "System of inspection visits to places of detention.", "parent": "OP-CEDAW" },
+  { "id": "OP-CRPD", "sigla": "OP-CRPD", "type": "minor", "year": 2006, "y": 45, "class": "branch-civil", "label": "Optional Protocol CRPD", "desc": "Complaints mechanism for disability rights violations.", "parent": "node_17" },
+  
+  { "id": "CRPD", "sigla": "CRPD", "type": "main", "year": 2006, "y": -90, "class": "branch-social", "label": "Convention on Persons with Disabilities", "desc": "Persons with disabilities as active subjects with full legal capacity.", "parent": "node_52" },
+  
+  { "id": "CPED", "sigla": "CPED", "type": "main", "year": 2006, "y": 45, "class": "branch-civil", "label": "Convention on Enforced Disappearance", "desc": "Enforced disappearance as a crime against humanity.", "parent": "OP-CRPD" },
+  
+  { "id": "UNDRIP", "sigla": "UNDRIP", "type": "main", "year": 2007, "y": 135, "class": "branch-coll", "label": "Rights of Indigenous Peoples", "desc": "Rights to land, culture, and self-determination.", "parent": "node_56" },
+  
+  { "id": "node_22", "sigla": "OP-ICESCR", "type": "minor", "year": 2008, "y": -45, "class": "branch-econ", "label": "Optional Protocol ICESCR", "desc": "Makes economic rights 'justiciable' via individual complaints.", "parent": "CMW" },
+  { "id": "A_RES_65_229", "sigla": "Bangkok", "type": "minor", "year": 2010, "y": 90, "class": "branch-women", "label": "Bangkok Rules", "desc": "Rules for the treatment of female prisoners.", "parent": "A_RES_48_104" },
+  
+  { "id": "node_23", "sigla": "UNGPs", "type": "main", "year": 2011, "y": -135, "class": "branch-env", "label": "Guiding Principles on Business", "desc": "Corporations have a responsibility to respect human rights.", "parent": "A_CONF.151_26" },
+  
+  { "id": "OP-CRC-IC", "sigla": "OP-CRC-IC", "type": "minor", "year": 2011, "y": 45, "class": "branch-civil", "label": "Protocol CRC Communications", "desc": "Gives children a direct voice for complaints to the UN.", "parent": "CPED" },
+  { "id": "node_61", "sigla": "Res. 21/11", "type": "minor", "year": 2012, "y": -45, "class": "branch-econ", "label": "Principles on Extreme Poverty", "desc": "Extreme poverty as a violation of human dignity.", "parent": "node_22" },
+  { "id": "A_RES_70_175", "sigla": "Mandela", "type": "minor", "year": 2015, "y": 45, "class": "branch-civil", "label": "Nelson Mandela Rules", "desc": "Prohibits prolonged solitary confinement.", "parent": "OP-CRC-IC" },
+  { "id": "A_RES_73_165", "sigla": "Res. 73/165", "type": "minor", "year": 2018, "y": -45, "class": "branch-econ", "label": "Rights of Peasants", "desc": "Protects small farmers from land speculation.", "parent": "node_61" },
+  
+  { "id": "A_RES_76_300", "sigla": "Res. 76/300", "type": "main", "year": 2022, "y": -135, "class": "branch-env", "label": "Right to Clean Environment", "desc": "Clean environment formally recognized as a human right.", "parent": "node_23" }
+];
+
+        const history = [
+            { year: 1945, label: "End of WWII", details: "The end of World War II and the horrors of the Holocaust lead to the birth of the UN." },
+            { year: 1989, label: "Fall of Berlin Wall", details: "The fall of the Wall and the end of the Cold War unlock the ratification of many treaties." },
+            { year: 2001, label: "September 11", details: "The 'War on Terror' begins, posing new challenges to the balance between security and rights." },
+            { year: 2015, label: "Agenda 2030", details: "UN adopts SDGs: development, sustainability, and rights are indivisible." }
         ];
 
         const container = document.getElementById('chart-container');
+        const viewport = document.getElementById('viewport');
         const svg = document.getElementById('lines');
-        const startYear = 1945;
-        const pixelsPerYear = 35;
-        const centerY = 350;
+        
+        const CFG = {
+            startYear: 1940,
+            pxPerYear: 65,
+            centerY: 350,
+            wMain: 70,
+            hMain: 34,
+            sizeMinor: 14,
+            yScale: 1.6 
+        };
+
+        function getSubtype(label) {
+            const l = label.toLowerCase();
+            if (l.includes("convention") || l.includes("covenant") || l.includes("charter")) return "subtype-conv";
+            if (l.includes("declaration")) return "subtype-decl";
+            return "subtype-other";
+        }
 
         function draw() {
-            data.forEach(item => {
-                const xPos = (item.year - startYear) * pixelsPerYear;
-                const yPos = centerY - item.y;
+            // Check occupied years to skip standard axis lines
+            const mainNodeYears = new Set(data.filter(d => d.type === 'main').map(d => d.year));
 
-                // Creazione del Nodo con Titolo e Descrizione
+            // 1. Axes
+            for (let y = 1940; y <= 2030; y += 5) {
+                if (mainNodeYears.has(y)) continue; // Skip if a main node exists
+
+                const x = (y - CFG.startYear) * CFG.pxPerYear;
+                const lT = document.createElement('div'); lT.className = 'axis-label axis-top'; lT.style.left = x+'px'; lT.innerText = y; container.appendChild(lT);
+                const lB = document.createElement('div'); lB.className = 'axis-label axis-bot'; lB.style.left = x+'px'; lB.innerText = y; container.appendChild(lB);
+            }
+
+            // 2. History Events
+            history.forEach(evt => {
+                const x = (evt.year - CFG.startYear) * CFG.pxPerYear;
+                const line = document.createElement('div'); line.className = 'bg-event-line'; line.style.left = x+'px';
+                
+                const label = document.createElement('div'); label.className = 'bg-event-label';
+                label.style.left = x+'px'; label.innerText = evt.label;
+
+                const popover = document.createElement('div'); popover.className = 'hist-popover';
+                popover.style.left = (x + 10) + 'px'; 
+                popover.innerHTML = `<h4>${evt.label} (${evt.year})</h4><p>${evt.details}</p>`;
+
+                label.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeAll();
+                    if (!popover.classList.contains('active')) popover.classList.add('active');
+                });
+
+                container.appendChild(line); container.appendChild(label); container.appendChild(popover);
+            });
+
+            // 3. Nodes, Guidelines, Connections
+            data.forEach(item => {
+                const x = (item.year - CFG.startYear) * CFG.pxPerYear;
+                const y = CFG.centerY - (item.y * CFG.yScale);
+                const color = colorMap[item.class];
+                const isMinor = item.type === 'minor';
+                const subtypeClass = isMinor ? '' : getSubtype(item.label);
+
+                // Dashed Guideline (Grey) with TOP and BOTTOM labels
+                if (!isMinor) {
+                    const guideLine = document.createElement('div');
+                    guideLine.className = 'year-guideline';
+                    guideLine.style.left = (x + CFG.wMain/2) + 'px'; 
+                    
+                    // Bottom Label
+                    const guideLabelBot = document.createElement('div');
+                    guideLabelBot.className = 'year-guideline-label bot';
+                    guideLabelBot.innerText = item.year;
+                    guideLine.appendChild(guideLabelBot);
+
+                    // Top Label
+                    const guideLabelTop = document.createElement('div');
+                    guideLabelTop.className = 'year-guideline-label top';
+                    guideLabelTop.innerText = item.year;
+                    guideLine.appendChild(guideLabelTop);
+
+                    container.appendChild(guideLine);
+                }
+
                 const div = document.createElement('div');
-                div.className = `node ${item.class}`;
-                div.style.left = xPos + 'px';
-                div.style.top = yPos + 'px';
+                div.className = `node ${isMinor ? 'type-minor' : 'type-main'} ${item.class} ${subtypeClass}`;
+                div.style.left = x + 'px';
+                
+                const height = isMinor ? CFG.sizeMinor : CFG.hMain;
+                div.style.top = (y - (height / 2)) + 'px';
+                
+                if(isMinor) { div.style.borderColor = color; } 
+                else { div.style.borderLeftColor = color; }
+
                 div.innerHTML = `
-                    <h3>${item.year}: ${item.label}</h3>
-                    <div class="description">${item.desc}</div>
+                    <div class="sigla">${item.sigla || ''}</div>
+                    <div class="extended-content">
+                        <div class="info-line">${isMinor ? 'Step' : item.sigla} | ${item.year}</div>
+                        <h3>${item.label}</h3>
+                        <div class="description">${item.desc}</div>
+                    </div>
                 `;
+
+                if (isMinor) {
+                    div.addEventListener('click', function(e) {
+                        e.stopPropagation(); 
+                        closeAll();
+                        this.classList.toggle('expanded');
+                    });
+                }
                 container.appendChild(div);
 
-                // Etichetta anno
-                const yearLabel = document.createElement('div');
-                yearLabel.className = 'axis-x-label';
-                yearLabel.style.left = xPos + 'px';
-                yearLabel.innerHTML = item.year;
-                container.appendChild(yearLabel);
-
-                // Linea di collegamento
                 if (item.parent) {
                     const parent = data.find(d => d.id === item.parent);
-                    const parentX = (parent.year - startYear) * pixelsPerYear;
-                    const parentY = centerY - parent.y;
+                    if (parent) {
+                        const px = (parent.year - CFG.startYear) * CFG.pxPerYear;
+                        const py = CFG.centerY - (parent.y * CFG.yScale); 
+                        const startOffset = parent.type === 'minor' ? CFG.sizeMinor : CFG.wMain;
+                        const xStart = px + startOffset; const yStart = py;
+                        const xEnd = x; const yEnd = y;
+                        const xMid = xStart + (xEnd - xStart) / 2;
 
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    // Creiamo una linea curva (Bezier) per un effetto più elegante
-                    const d = `M ${parentX + 180} ${parentY + 20} C ${parentX + 250} ${parentY + 20}, ${xPos - 50} ${yPos + 20}, ${xPos} ${yPos + 20}`;
-                    line.setAttribute("d", d);
-                    line.setAttribute("stroke", "#bdc3c7");
-                    line.setAttribute("fill", "transparent");
-                    line.setAttribute("stroke-width", "2");
-                    svg.appendChild(line);
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("d", `M ${xStart} ${yStart} L ${xMid} ${yStart} L ${xMid} ${yEnd} L ${xEnd} ${yEnd}`);
+                        path.setAttribute("stroke", color); path.setAttribute("fill", "none");
+                        path.setAttribute("stroke-width", "1.5"); path.setAttribute("opacity", "0.7");
+                        svg.appendChild(path);
+                    }
                 }
             });
         }
+
+        function closeAll() {
+            document.querySelectorAll('.hist-popover.active').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.node.type-minor.expanded').forEach(el => el.classList.remove('expanded'));
+        }
+
+        document.addEventListener('click', closeAll);
+
+        viewport.addEventListener('wheel', (evt) => {
+            evt.preventDefault();
+            viewport.scrollLeft += evt.deltaY;
+        });
 
         draw();
     </script>
