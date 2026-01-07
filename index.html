@@ -2,231 +2,287 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Human Rights Evolution - Final English</title>
+    <title>Human Rights Evolution - Final Interactive</title>
     <style>
         :root {
-            --grid-color: rgba(200, 210, 220, 0.25);
+            /* Light Theme Variables */
+            --bg-color: #f8fafc;
+            --text-color: #2d3748;
+            --grid-color: rgba(200, 210, 220, 0.45);
             --axis-color: #2d3748;
-            --hist-color: #dd6b20; /* Dark Orange for History */
+            --hist-color: #dd6b20;
+            --card-bg: #ffffff;
+            --card-border: #cbd5e0;
+            --shadow: rgba(0,0,0,0.1);
             
-            /* Updated Branch Palette */
-            --c-root: #2d3748;
-            --c-civil: #e53e3e;      /* Red (Civil) */
-            --c-econ: #d69e2e;       /* WARM YELLOW / MUSTARD (Economic) */
-            --c-women: #d53f8c;      /* Pink (Women) */
-            --c-coll: #c05621;       /* Rust (Collective) */
-            --c-social: #3182ce;     /* Blue (Social) */
-            --c-env: #38a169;        /* GREEN (Environment) */
+            /* Node Colors */
+            --node-conv-bg: #ffffff;
+            --node-decl-bg: #fff9c4;
+            --node-other-bg: #e2e8f0;
+            
+            /* Status Colors */
+            --status-low: #e53e3e;   /* Red */
+            --status-mid: #d69e2e;   /* Yellow */
+            --status-high: #38a169;  /* Green */
+
+            /* Branch Colors */
+            --c-civil: #e53e3e;        
+            --c-econ: #d69e2e;        
+            --c-women: #d53f8c;        
+            --c-coll: #c05621;        
+            --c-social: #3182ce;      
+            --c-env: #38a169;         
+        }
+
+        /* DARK MODE OVERRIDES */
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #f1f5f9;
+            --grid-color: rgba(255, 255, 255, 0.08);
+            --axis-color: #94a3b8;
+            --card-bg: #1e293b;
+            --card-border: #475569;
+            --shadow: rgba(0,0,0,0.6);
+            --node-conv-bg: #334155; 
+            --node-decl-bg: #5f5218; 
+            --node-other-bg: #475569; 
         }
 
         /* Base Layout */
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
         
         header { 
             height: 50px; display: flex; align-items: center; justify-content: center; 
-            background: rgba(255, 255, 255, 0.95); 
-            border-bottom: 1px solid #e2e8f0; z-index: 1100; position: relative; 
+            background: var(--card-bg); 
+            border-bottom: 1px solid var(--card-border); z-index: 1100; position: relative; 
             backdrop-filter: blur(5px);
         }
-        h1 { font-size: 1.2rem; color: #1a365d; margin: 0; letter-spacing: 0.5px; font-weight: 700; }
+        h1 { font-size: 1.2rem; color: var(--text-color); margin: 0; letter-spacing: 0.5px; font-weight: 700; }
         
-        /* Legend */
+        /* UI CONTROLS */
+        #ui-controls {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1100;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .ui-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            color: var(--text-color); font-size: 14px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px var(--shadow); transition: transform 0.2s;
+        }
+        .ui-btn:hover { transform: scale(1.1); }
+
+        /* LEGEND */
         #legend {
-            position: fixed; top: 60px; right: 20px; background: rgba(255,255,255,0.98);
-            padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            z-index: 1000; font-size: 11px; border: 1px solid #cbd5e0; min-width: 180px;
+            position: fixed; top: 60px; right: 20px; background: var(--card-bg);
+            padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px var(--shadow);
+            z-index: 1000; font-size: 11px; border: 1px solid var(--card-border); min-width: 200px;
         }
-        .legend-item { display: flex; align-items: center; margin-bottom: 6px; }
-        .legend-color { width: 12px; height: 12px; margin-right: 10px; border-radius: 2px; }
-        
-        .legend-divider { margin: 10px 0; border-top: 1px solid #e2e8f0; }
-        .legend-sub { font-size: 10px; color: #555; font-style: italic; margin-left: 24px; margin-bottom: 4px; }
-        .legend-hist-line { width: 16px; border-top: 3px dashed var(--hist-color); margin-right: 10px; }
-        .legend-gray-line { width: 16px; border-top: 1px dashed #718096; margin-right: 10px; }
+        .legend-section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; letter-spacing: 0.5px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; color: var(--text-color); }
+        .legend-color { width: 10px; height: 10px; margin-right: 8px; border-radius: 2px; }
+        .legend-divider { margin: 8px 0; border-top: 1px solid var(--card-border); }
+        .legend-hist-line { width: 14px; border-top: 2px dashed var(--hist-color); margin-right: 8px; }
+        .legend-gray-line { width: 14px; border-top: 1px dashed #718096; margin-right: 8px; }
+        .legend-square { width: 12px; height: 12px; margin-right: 8px; border: 1px solid #a0aec0; border-radius: 2px; }
+        .legend-minor-node { width: 8px; height: 8px; margin-right: 10px; border: 2px solid #4a5568; background: var(--card-bg); border-radius: 2px; margin-left: 2px; }
+        .legend-instr { display: flex; flex-direction: column; gap: 6px; color: var(--text-color); font-size: 11px; line-height: 1.4; }
+        .legend-instr span { display: flex; align-items: center; }
+        .legend-instr i { font-style: normal; margin-right: 10px; font-size: 14px; width: 20px; text-align: center; }
+        .legend-instr strong { margin-right: 4px; }
 
-        /* Legend Squares for Document Types - Enhanced Visibility */
-        .legend-square { width: 14px; height: 14px; margin-right: 10px; border: 1px solid #a0aec0; }
-
-        /* Viewport & Scroll */
-        #viewport { 
-            width: 100vw; height: calc(100vh - 50px); 
-            overflow-x: scroll; overflow-y: hidden; 
-            position: relative; scroll-behavior: smooth; 
-        }
-        #viewport::-webkit-scrollbar { height: 12px; }
-        #viewport::-webkit-scrollbar-track { background: #f1f5f9; }
-        #viewport::-webkit-scrollbar-thumb { background: #64748b; border-radius: 6px; border: 3px solid #f1f5f9; }
-
-        /* Chart Container */
+        /* VIEWPORT */
+        #viewport { width: 100vw; height: calc(100vh - 50px); overflow-x: scroll; overflow-y: hidden; position: relative; scroll-behavior: smooth; }
         #chart-container {
             position: relative; width: 6800px; height: 650px; 
-            margin: 50px 0 60px 0; /* Margins for axes */
-            background-color: white;
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 25px 25px; 
+            margin: 50px 0 60px 0; 
+            background-color: var(--bg-color);
+            background-image: linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 65px 100%; 
             border-top: 2px solid var(--axis-color); border-bottom: 2px solid var(--axis-color);
+            transform-origin: 0 50%; transition: transform 0.3s ease; 
         }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
 
-        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        /* CROSS REFERENCES */
+        .cross-ref-line { stroke-dasharray: 4, 4; animation: dash 30s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: 1000; } }
 
-        /* --- NODE STYLES --- */
+        /* CLOSE BUTTON */
+        .close-btn {
+            position: absolute; top: 12px; right: 12px; width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-color); border: 1px solid var(--card-border); border-radius: 4px;
+            color: #e53e3e; font-weight: bold; font-size: 16px; line-height: 1;
+            cursor: pointer; z-index: 2100;
+        }
+        .close-btn:hover { background: #e53e3e; color: white; border-color: #e53e3e; }
+
+        /* ERAS */
+        .era-block { position: absolute; top: 0; bottom: 0; z-index: 0; cursor: pointer; transition: opacity 0.3s; opacity: 0.8; border-left: 1px solid rgba(0,0,0,0.05); }
+        .era-block:hover { filter: brightness(0.95); opacity: 1; }
+        
+        /* ERA LABEL: Reduced size and finer weight */
+        .era-label-bg { 
+            position: absolute; 
+            width: 100%; 
+            text-align: center;
+            font-size: 2.5rem; /* Reduced from 5rem */
+            font-weight: 700;  /* Reduced from 900 */
+            text-transform: uppercase; 
+            color: rgba(0,0,0,0.06); 
+            pointer-events: none; 
+            white-space: nowrap; 
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        /* Classi per alternanza */
+        .era-pos-top { top: 50px; }
+        .era-pos-bot { bottom: 50px; }
+
+        /* PATH HIGHLIGHTING */
+        .dimmed { opacity: 0.1 !important; filter: grayscale(100%); transition: opacity 0.4s ease, filter 0.4s ease; }
+        path.highlighted-path { stroke-width: 3px !important; opacity: 1 !important; z-index: 10; }
+        .node:not(.dimmed) { z-index: 100 !important; }
+
+        /* NODES */
         .node {
             position: absolute; z-index: 20; 
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
+            box-shadow: 0 3px 6px var(--shadow); 
             cursor: pointer; overflow: hidden;
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
             display: flex; align-items: center; justify-content: center;
+            color: #2d3748; 
         }
-
-        /* MAIN TYPE */
-        .node.type-main {
-            width: 70px; height: 34px;
-            border-radius: 4px;
-            border-left: 5px solid; 
-            border-top: 1px solid #cbd5e0; 
-            border-right: 1px solid #cbd5e0; 
-            border-bottom: 1px solid #cbd5e0;
-        }
-        .node.type-main .sigla { font-weight: 700; font-size: 11px; color: #2d3748; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
-
-        /* Visual Subtypes - Accentuated */
-        .node.type-main.subtype-conv { 
-            background: #ffffff; 
-            border-bottom: 2px solid #718096; /* Darker grey border for Convention */
-        }
-        .node.type-main.subtype-decl { 
-            background: #fff9c4; /* Distinct Cream/Yellowish */
-            border-bottom: 3px double #d69e2e; /* Double border matching econ/gold tones */
-            border-bottom-color: #a0aec0;
-        }
-        .node.type-main.subtype-other { 
-            background: #e2e8f0; /* Visible Grey */
-            border-bottom: 2px dotted #4a5568; 
-        }
-
-        /* MINOR TYPE */
-        .node.type-minor {
-            width: 14px; height: 14px;
-            border-radius: 3px;
-            border: 2px solid; 
-            background: white;
-            padding: 0;
-        }
+        .node.type-main { width: 70px; height: 34px; border-radius: 4px; border-left: 5px solid; border-top: 1px solid #cbd5e0; border-right: 1px solid #cbd5e0; border-bottom: 1px solid #cbd5e0; }
+        .node.type-main .sigla { font-weight: 700; font-size: 11px; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+        .node.type-main.subtype-conv { background: var(--node-conv-bg); border-bottom: 2px solid #718096; }
+        .node.type-main.subtype-decl { background: var(--node-decl-bg); border-bottom: 3px double #d69e2e; border-bottom-color: #a0aec0; }
+        .node.type-main.subtype-other { background: var(--node-other-bg); border-bottom: 2px dotted #4a5568; }
+        body.dark-mode .node.type-main .sigla { color: var(--text-color); }
+        body.dark-mode .node.type-minor { background: var(--card-bg); border-color: var(--text-color); }
+        .node.type-minor { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; background: var(--node-conv-bg); padding: 0; }
         .node.type-minor .sigla { display: none; }
 
-        /* --- EXPANSION LOGIC --- */
+        /* EXPANSION LOGIC */
         .node .extended-content { display: none; width: 100%; opacity: 0; transition: opacity 0.2s ease; }
         
-        .node.type-main:hover {
-            width: 400px; height: auto; min-height: 100px;
-            padding: 16px; z-index: 999;
+        .node.type-main:not(.dimmed):not(.expanded):hover, .node.type-minor:not(.dimmed):not(.expanded):hover {
+            transform: scale(1.15); box-shadow: 0 10px 25px var(--shadow); z-index: 50 !important;
+        }
+
+        /* CLICK: Full Expansion */
+        .node.expanded {
+            width: 500px; 
+            height: auto; min-height: 200px;
+            padding: 20px; z-index: 5000 !important; 
             justify-content: flex-start; align-items: flex-start;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-            border-width: 1px; border-left-width: 6px;
-            background: white; border-bottom-style: solid;
-            transform: translateY(-4px);
+            box-shadow: 0 25px 60px var(--shadow);
+            border-radius: 4px; border-width: 1px; border-left-width: 6px; 
+            cursor: default; background: var(--card-bg); color: var(--text-color);
         }
-        .node.type-main:hover .sigla { display: none; }
-        .node.type-main:hover .extended-content { display: block; opacity: 1; }
+        .node.expanded .sigla { display: none; }
+        .node.expanded .extended-content { display: block; opacity: 1; }
+        .node.type-main.expanded { border-bottom-style: solid; }
 
-        .node.type-minor.expanded {
-            width: 380px; height: auto; min-height: 90px;
-            padding: 16px; z-index: 1000;
-            justify-content: flex-start; align-items: flex-start;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-            border-radius: 4px;
-            border-width: 1px; border-left-width: 6px; 
-            cursor: default;
-        }
-        .node.type-minor.expanded .extended-content { display: block; opacity: 1; }
+        /* CONTENT */
+        .extended-content h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--text-color); line-height: 1.3; font-weight: 800; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+        .extended-content .info-line { font-size: 11px; font-weight: 800; color: #718096; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .extended-content .description { font-size: 13px; color: var(--text-color); margin-top: 10px; line-height: 1.7; text-align: justify; max-height: 300px; overflow-y: auto; padding-right: 10px; }
+        .extended-content .description b { color: #4299e1; font-weight: 700; background: rgba(66, 153, 225, 0.1); padding: 0 2px; border-radius: 2px; }
 
-        .node.type-minor:not(.expanded):hover {
-            transform: scale(1.3); box-shadow: 0 0 10px rgba(0,0,0,0.2); z-index: 30;
-        }
+        .doc-link-btn { display: inline-block; margin-top: 10px; padding: 6px 12px; background: #3182ce; color: white; text-decoration: none; font-size: 11px; font-weight: bold; border-radius: 4px; transition: background 0.2s; }
+        .doc-link-btn:hover { background: #2b6cb0; }
 
-        .extended-content h3 { margin: 0 0 8px 0; font-size: 14px; color: #1a365d; line-height: 1.3; font-weight: 700; }
-        .extended-content .info-line { font-size: 10px; font-weight: 800; color: #718096; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
-        .extended-content .description { font-size: 12px; color: #4a5568; margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7; line-height: 1.6; }
+        /* RATIFICATION BAR & LIST */
+        .ratification-container { margin-top: 15px; font-size: 11px; color: var(--text-color); font-weight: 600; border-top: 1px solid var(--card-border); padding-top: 10px; }
+        .progress-track { width: 100%; height: 8px; background: #edf2f7; border-radius: 4px; margin-top: 5px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+        .progress-fill { height: 100%; transition: width 0.5s ease; }
+        body.dark-mode .progress-track { background: #4a5568; }
 
-        /* --- INTERACTIVE HISTORY EVENTS --- */
-        .bg-event-line { 
-            position: absolute; top: 0; width: 1px; height: 100%; 
-            border-left: 3px dashed var(--hist-color); 
-            z-index: 1; opacity: 0.5; pointer-events: none; 
-        }
-        .bg-event-label { 
-            position: absolute; top: 15px; left: 8px; 
-            color: var(--hist-color); font-size: 11px; font-weight: 700; 
-            background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap;
-            cursor: pointer; pointer-events: auto; 
-            transition: transform 0.2s, background 0.2s;
-            border: 1px solid transparent;
-        }
-        .bg-event-label:hover { transform: scale(1.05); background: #fff; border-color: var(--hist-color); }
-
-        .hist-popover {
-            position: absolute; top: 45px; left: 10px; width: 280px;
-            background: #fff; border: 1px solid var(--hist-color); border-left-width: 5px;
-            border-radius: 4px; padding: 12px;
-            box-shadow: 0 8px 20px rgba(221, 107, 32, 0.2);
-            z-index: 2000; display: none; 
+        /* Expandable Country List */
+        details { margin-top: 8px; }
+        summary { cursor: pointer; color: #718096; font-size: 10px; font-weight: bold; outline: none; }
+        summary:hover { color: var(--text-color); }
+        .country-list-box {
+            margin-top: 5px; max-height: 100px; overflow-y: auto; 
+            background: rgba(0,0,0,0.03); border: 1px solid var(--card-border); 
+            border-radius: 4px; padding: 5px;
             pointer-events: auto;
         }
-        .hist-popover.active { display: block; animation: fadeIn 0.3s ease; }
-        .hist-popover h4 { margin: 0 0 5px 0; color: #c05621; font-size: 13px; }
-        .hist-popover p { margin: 0; font-size: 11px; line-height: 1.5; color: #4a5568; }
+        .country-list-box ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px; }
+        .country-list-box li { font-size: 10px; padding: 2px 4px; background: var(--card-bg); border-radius: 2px; border: 1px solid var(--card-border); }
 
+        /* HISTORICAL POP-UP */
+        .hist-popover {
+            position: absolute; top: 60px; left: 20px; width: 450px; 
+            background: var(--card-bg); border: 1px solid var(--hist-color); border-left-width: 5px;
+            border-radius: 4px; padding: 24px;
+            box-shadow: 0 15px 40px var(--shadow); color: var(--text-color);
+            z-index: 2000; display: none; pointer-events: auto;
+        }
+        .hist-popover.active { display: block; animation: fadeIn 0.3s ease; }
+        .hist-popover h4 { margin: 0 0 12px 0; color: #c05621; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .hist-popover p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--text-color); text-align: justify; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Year Guidelines (Grey) */
-        .year-guideline {
-            position: absolute; top: 0; bottom: 0; width: 1px;
-            border-left: 1px dashed #718096; opacity: 0.4; z-index: 2; 
-            pointer-events: none;
+        /* EVENTS & AXIS */
+        .bg-event-line { position: absolute; top: 0; width: 1px; height: 100%; border-left: 3px dashed var(--hist-color); z-index: 15; opacity: 0.5; pointer-events: none; transition: opacity 0.4s; }
+        .bg-event-label { 
+            position: absolute; top: 15px; left: 8px; color: var(--hist-color); font-size: 11px; font-weight: 700; 
+            background: var(--card-bg); padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 4px var(--shadow); white-space: nowrap; cursor: pointer; pointer-events: auto; z-index: 16;
+            transition: transform 0.2s;
         }
-        .year-guideline-label {
-            position: absolute; left: -15px; width: 30px;
-            text-align: center; font-size: 10px; font-weight: bold;
-            color: #4a5568; background: rgba(255,255,255,0.9);
-            border-radius: 3px; padding: 2px 0; z-index: 3;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
+        .bg-event-label:hover { transform: scale(1.05); }
+        .year-guideline { position: absolute; top: 0; bottom: 0; width: 1px; border-left: 1px dashed #718096; opacity: 0.4; z-index: 12; pointer-events: none; }
+        .year-guideline-label { position: absolute; left: -15px; width: 30px; text-align: center; font-size: 10px; font-weight: bold; color: var(--text-color); background: var(--card-bg); border-radius: 3px; padding: 2px 0; z-index: 13; box-shadow: 0 1px 2px var(--shadow); }
         .year-guideline-label.top { top: -28px; }
         .year-guideline-label.bot { bottom: -28px; }
-
-        /* Axis Labels */
-        .axis-label { position: absolute; font-size: 11px; font-weight: bold; color: #94a3b8; transform: translateX(-50%); z-index: 5; }
+        .axis-label { position: absolute; font-size: 11px; font-weight: bold; color: #94a3b8; transform: translateX(-50%); z-index: 15; }
         .axis-top { top: -25px; }
         .axis-bot { bottom: -25px; }
-
-        /* Utilities */
-        .root { color: var(--c-root); }
-        .branch-civil { color: var(--c-civil); }
     </style>
 </head>
 <body>
 
-    <header><h1>Evolution of Human Rights (1945 - 2025)</h1></header>
+    <header><h1 id="main-title">Human Rights Timeline: A Comprehensive Evolution</h1></header>
+
+    <div id="ui-controls">
+        <button class="ui-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
+        <button class="ui-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌗</button>
+        <button class="ui-btn" onclick="changeZoom(0.1)" title="Zoom In">➕</button>
+        <button class="ui-btn" onclick="changeZoom(-0.1)" title="Zoom Out">➖</button>
+    </div>
 
     <div id="legend">
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-civil)"></div> Civil & Political</div>
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-econ)"></div> Economic & Social</div>
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-women)"></div> Gender / Women</div>
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-coll)"></div> Collective Rights</div>
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-social)"></div> Social Rights</div>
-        <div class="legend-item"><div class="legend-color" style="background: var(--c-env)"></div> Environment</div>
+        <div class="legend-section-title" data-key="branches">Branches</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-civil)"></div> <span data-key="civil">Civil & Political</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-econ)"></div> <span data-key="econ">Economic & Social</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-women)"></div> <span data-key="women">Gender / Women</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-coll)"></div> <span data-key="coll">Collective Rights</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-social)"></div> <span data-key="social">Social Rights</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--c-env)"></div> <span data-key="env">Environment</span></div>
         
         <div class="legend-divider"></div>
-        <div class="legend-item"><strong>Line Legend:</strong></div>
-        <div class="legend-item"><div class="legend-hist-line"></div> Historical Event (Click!)</div>
-        <div class="legend-item"><div class="legend-gray-line"></div> Document Year</div>
+        <div class="legend-section-title" data-key="types">Document Types</div>
+        <div class="legend-item"><div class="legend-square" style="background:var(--node-conv-bg); border-bottom:2px solid #718096;"></div> <span data-key="conv">Convention (Binding)</span></div>
+        <div class="legend-item"><div class="legend-square" style="background:var(--node-decl-bg); border-bottom:3px double #d69e2e;"></div> <span data-key="decl">Declaration (Soft Law)</span></div>
+        <div class="legend-item"><div class="legend-square" style="background:var(--node-other-bg); border-bottom:2px dotted #4a5568;"></div> <span data-key="other">Other (Rules/Principles)</span></div>
+        <div class="legend-item"><div class="legend-minor-node"></div> <span data-key="step">Intermediate Step</span></div>
 
         <div class="legend-divider"></div>
-        <div class="legend-item"><strong>Document Type:</strong></div>
-        <div class="legend-item"><div class="legend-square" style="background:white; border-bottom:2px solid #718096;"></div> Convention</div>
-        <div class="legend-item"><div class="legend-square" style="background:#fff9c4; border-bottom:3px double #d69e2e;"></div> Declaration</div>
-        <div class="legend-item"><div class="legend-square" style="background:#e2e8f0; border-bottom:2px dotted #4a5568;"></div> Other</div>
+        <div class="legend-section-title" data-key="elements">Timeline Elements</div>
+        <div class="legend-item"><div class="legend-hist-line"></div> <span data-key="event">Historical Event</span></div>
+        <div class="legend-item"><div class="legend-gray-line"></div> <span data-key="doc_year">Document Year</span></div>
+
+        <div class="legend-divider"></div>
+        <div class="legend-section-title" data-key="explore">How to Explore</div>
+        <div class="legend-instr" id="legend-instr-content">
+            </div>
     </div>
 
     <div id="viewport">
@@ -236,264 +292,983 @@
     </div>
 
     <script>
-        const colorMap = {
-            "root": "#2d3748", "branch-civil": "#e53e3e", "branch-econ": "#d69e2e",
-            "branch-women": "#d53f8c", "branch-coll": "#dd6b20", "branch-social": "#3182ce", "branch-env": "#38a169"
+        // --- TRANSLATION DATA ---
+        let currentLang = 'en';
+
+        const dict = {
+            en: {
+                title: "Human Rights Timeline: A Comprehensive Evolution",
+                branches: "Branches",
+                civil: "Civil & Political",
+                econ: "Economic & Social",
+                women: "Gender / Women",
+                coll: "Collective Rights",
+                social: "Social Rights",
+                env: "Environment",
+                types: "Document Types",
+                conv: "Convention (Binding)",
+                decl: "Declaration (Soft Law)",
+                other: "Other (Rules/Principles)",
+                step: "Intermediate Step",
+                elements: "Timeline Elements",
+                event: "Historical Event",
+                doc_year: "Document Year",
+                explore: "How to Explore",
+                instr: [
+                    "<i>🖱️</i> <strong>Scroll</strong> horizontally to navigate history",
+                    "<i>👆</i> <strong>Click</strong> Any Node to expand details",
+                    "<i>✨</i> <strong>Hover</strong> to see connections",
+                    "<i>🌍</i> <strong>Click</strong> Background for Historical Context",
+                    "<i>❌</i> <strong>Click</strong> Empty space to Reset view"
+                ],
+                rat_label: "Ratifications:",
+                rat_states: "States",
+                view_countries: "View Ratifying Countries",
+                read_text: "📄 Read Full Text",
+                hist_ctx: "Historical Context",
+                step_label: "Step"
+            },
+            it: {
+                title: "Evoluzione dei Diritti Umani: Una Cronologia Completa",
+                branches: "Rami",
+                civil: "Civili & Politici",
+                econ: "Economici & Sociali",
+                women: "Genere / Donne",
+                coll: "Diritti Collettivi",
+                social: "Diritti Sociali",
+                env: "Ambiente",
+                types: "Tipi di Documento",
+                conv: "Convenzione (Vincolante)",
+                decl: "Dichiarazione (Soft Law)",
+                other: "Altro (Regole/Principi)",
+                step: "Passaggio Intermedio",
+                elements: "Elementi Cronologia",
+                event: "Evento Storico",
+                doc_year: "Anno Documento",
+                explore: "Come Esplorare",
+                instr: [
+                    "<i>🖱️</i> <strong>Scorri</strong> orizzontalmente per navigare",
+                    "<i>👆</i> <strong>Clicca</strong> su un nodo per i dettagli",
+                    "<i>✨</i> <strong>Passa sopra</strong> per le connessioni",
+                    "<i>🌍</i> <strong>Clicca</strong> lo sfondo per il contesto storico",
+                    "<i>❌</i> <strong>Clicca</strong> il vuoto per resettare"
+                ],
+                rat_label: "Ratifiche:",
+                rat_states: "Stati",
+                view_countries: "Vedi Paesi Ratificanti",
+                read_text: "📄 Leggi Testo Completo",
+                hist_ctx: "Contesto Storico",
+                step_label: "Step"
+            }
         };
 
+        const colorMap = { "root": "#2d3748", "branch-civil": "#e53e3e", "branch-econ": "#d69e2e", "branch-women": "#d53f8c", "branch-coll": "#dd6b20", "branch-social": "#3182ce", "branch-env": "#38a169" };
+
         const data = [
-  { "id": "unc", "sigla": "UNC", "type": "main", "year": 1945, "y": 0, "class": "root", "label": "United Nations Charter", "desc": "The birth of modern international law. Establishes human rights as the foundation for global peace.", "parent": null },
-  { "id": "udhr", "sigla": "UDHR", "type": "main", "year": 1948, "y": 0, "class": "root", "label": "Universal Declaration of Human Rights", "desc": "The cornerstone. The first global expression of inalienable rights for every human being.", "parent": "unc" },
-  
-  { "id": "node_2", "sigla": "DOC", "type": "main", "year": 1960, "y": 135, "class": "branch-coll", "label": "Declaration on Independence to Colonial Countries", "desc": "The 'Magna Carta' of decolonization. Subjection of peoples constitutes a denial of fundamental human rights.", "parent": "udhr" },
-  { "id": "A_RES_1514(XV)", "sigla": "Res. 1514", "type": "minor", "year": 1960, "y": 135, "class": "branch-coll", "label": "General Assembly Resolution 1514", "desc": "Operational resolution accelerating independence for over 80 colonial nations.", "parent": "node_2" },
-  
-  // YELLOW BRANCH (ECONOMIC) - LINEAR
-  { "id": "node_27", "sigla": "Res. 1803", "type": "minor", "year": 1962, "y": -45, "class": "branch-econ", "label": "Permanent Sovereignty over Natural Resources", "desc": "The right of peoples to freely use their natural wealth and resources.", "parent": "udhr" },
-  
-  // RED BRANCH (CIVIL) - LINEAR
-  { "id": "node_28", "sigla": "Res. 1904", "type": "minor", "year": 1963, "y": 45, "class": "branch-civil", "label": "Declaration on Elimination of Racial Discrimination", "desc": "First organized UN response to apartheid and racial discrimination.", "parent": "udhr" },
-  
-  { "id": "ICERD", "sigla": "ICERD", "type": "main", "year": 1965, "y": 45, "class": "branch-civil", "label": "Convention on Elimination of Racial Discrimination", "desc": "First binding treaty: obliges states to eliminate racial discrimination in all forms.", "parent": "node_28" },
-  
-  { "id": "iccpr", "sigla": "ICCPR", "type": "main", "year": 1966, "y": 45, "class": "branch-civil", "label": "International Covenant on Civil and Political Rights", "desc": "Protects 'classic' rights: life, speech, voting, and fair trial.", "parent": "ICERD" },
-  
-  { "id": "icescr", "sigla": "ICESCR", "type": "main", "year": 1966, "y": -45, "class": "branch-econ", "label": "Covenant on Economic, Social and Cultural Rights", "desc": "Guarantees 'positive' rights: work, health, education, and adequate standard of living.", "parent": "node_27" },
-  
-  { "id": "ICCPR-OP1", "sigla": "OP1-ICCPR", "type": "main", "year": 1966, "y": 45, "class": "branch-civil", "label": "Optional Protocol to ICCPR", "desc": "Allows individuals to file complaints against their State for rights violations.", "parent": "iccpr" },
-  
-  // BLUE BRANCH (SOCIAL) - Now branching from YELLOW (ICESCR)
-  { "id": "node_29", "sigla": "Res. 2542", "type": "minor", "year": 1969, "y": -90, "class": "branch-social", "label": "Declaration on Social Progress", "desc": "Social development as a means for human dignity.", "parent": "icescr" },
-  { "id": "node_30", "sigla": "Res. 2856", "type": "minor", "year": 1971, "y": -90, "class": "branch-social", "label": "Rights of Mentally Retarded Persons", "desc": "Early step for rights in the context of mental disability.", "parent": "node_29" },
-  
-  { "id": "node_31", "sigla": "DOC", "type": "minor", "year": 1974, "y": -45, "class": "branch-econ", "label": "Declaration on Eradication of Hunger", "desc": "Inalienable right of every man, woman, and child to be free from hunger.", "parent": "icescr" },
-  
-  // PINK BRANCH (WOMEN) - Now branching from RED (ICCPR)
-  { "id": "node_32", "sigla": "Res. 3318", "type": "minor", "year": 1974, "y": 90, "class": "branch-women", "label": "Protection of Women in Emergency", "desc": "Focus on women and children during armed conflicts.", "parent": "iccpr" },
-  
-  { "id": "node_35", "sigla": "Res. 3452", "type": "minor", "year": 1975, "y": 45, "class": "branch-civil", "label": "Declaration against Torture", "desc": "Moral condemnation preparing the ground for the 1984 convention.", "parent": "ICCPR-OP1" },
-  
-  { "id": "node_34", "sigla": "Res. 3447", "type": "main", "year": 1975, "y": -90, "class": "branch-social", "label": "Declaration on Rights of Disabled Persons", "desc": "Recognition of civil and political rights for persons with disabilities.", "parent": "node_30" },
-  
-  { "id": "node_33", "sigla": "Res. 3384", "type": "minor", "year": 1975, "y": 135, "class": "branch-coll", "label": "Use of Scientific Progress", "desc": "Science must serve peace, not destruction.", "parent": "A_RES_1514(XV)" },
-  
-  { "id": "node_36", "sigla": "DOC", "type": "minor", "year": 1978, "y": 45, "class": "branch-civil", "label": "Declaration on Race", "desc": "Rejects scientific racism and theories of racial superiority.", "parent": "node_35" },
-  
-  { "id": "CEDAW", "sigla": "CEDAW", "type": "main", "year": 1979, "y": 90, "class": "branch-women", "label": "Convention on Discrimination against Women", "desc": "The 'Bill of Rights for Women'. Real equality, not just formal.", "parent": "node_32" },
-  
-  { "id": "A_RES_36_55", "sigla": "Res. 36/55", "type": "main", "year": 1981, "y": 45, "class": "branch-civil", "label": "Declaration on Intolerance and Religion", "desc": "Defends freedom of thought, conscience, and religion.", "parent": "node_36" },
-  
-  { "id": "A_RES_37_194", "sigla": "Res. 37/194", "type": "minor", "year": 1982, "y": 45, "class": "branch-civil", "label": "Medical Ethics", "desc": "Prohibits medical personnel from participating in torture.", "parent": "A_RES_36_55" },
-  { "id": "E_RES_1984_50", "sigla": "Res. 84/50", "type": "minor", "year": 1984, "y": 45, "class": "branch-civil", "label": "Death Penalty Safeguards", "desc": "Strict limits to protect those facing the death penalty.", "parent": "A_RES_37_194" },
-  { "id": "A_RES_39_11", "sigla": "Res. 39/11", "type": "minor", "year": 1984, "y": 135, "class": "branch-coll", "label": "Right of Peoples to Peace", "desc": "Fundamental obligation of every State to preserve peace.", "parent": "node_33" },
-  
-  { "id": "CAT", "sigla": "CAT", "type": "main", "year": 1984, "y": 45, "class": "branch-civil", "label": "Convention against Torture", "desc": "Absolute ban on torture, with no exceptions for war or emergency.", "parent": "E_RES_1984_50" },
-  
-  { "id": "A_RES_40_32", "sigla": "Res. 40/32", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", "label": "Independence of Judiciary", "desc": "Core principles to protect judges from political pressure.", "parent": "CAT" },
-  { "id": "A_RES_40_144", "sigla": "Res. 40/144", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", "label": "Rights of Non-Nationals", "desc": "Human rights belong to the person, not the passport.", "parent": "A_RES_40_32" },
-  { "id": "node_9", "sigla": "DOC", "type": "minor", "year": 1986, "y": 135, "class": "branch-coll", "label": "Declaration on Development", "desc": "Towards the recognition of development as a right.", "parent": "A_RES_39_11" },
-  
-  { "id": "A_RES_41_128", "sigla": "Res. 41/128", "type": "main", "year": 1986, "y": 135, "class": "branch-coll", "label": "Declaration on the Right to Development", "desc": "Development is an inalienable human right; cooperation is mandatory.", "parent": "node_9" },
-  
-  { "id": "A_RES_43_173", "sigla": "Res. 43/173", "type": "minor", "year": 1988, "y": 45, "class": "branch-civil", "label": "Protection of Detainees", "desc": "Humane treatment for anyone deprived of liberty.", "parent": "A_RES_40_144" },
-  { "id": "ICCPR-OP2", "sigla": "OP2-ICCPR", "type": "minor", "year": 1989, "y": 45, "class": "branch-civil", "label": "Second Optional Protocol to ICCPR", "desc": "Aims for the total abolition of the death penalty.", "parent": "A_RES_43_173" },
-  
-  { "id": "CRC", "sigla": "CRC", "type": "main", "year": 1989, "y": -90, "class": "branch-social", "label": "Convention on the Rights of the Child", "desc": "Children are subjects of rights, not just objects of protection.", "parent": "node_34" },
-  
-  { "id": "node_45", "sigla": "DOC", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", "label": "Role of Lawyers", "desc": "Access to lawyers is vital for the defense of rights.", "parent": "ICCPR-OP2" },
-  
-  { "id": "CMW", "sigla": "CMW", "type": "main", "year": 1990, "y": -45, "class": "branch-econ", "label": "Convention on Migrant Workers", "desc": "Rights for migrant workers and their families.", "parent": "node_31" },
-  
-  { "id": "A_RES_45_111", "sigla": "Res. 45/111", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", "label": "Treatment of Prisoners", "desc": "Basic principles for prison treatment.", "parent": "node_45" },
-  { "id": "A_RES_47_135", "sigla": "Res. 47/135", "type": "minor", "year": 1992, "y": 135, "class": "branch-coll", "label": "Rights of Minorities", "desc": "Protecting minority identity for social stability.", "parent": "A_RES_41_128" },
-  
-  // GREEN BRANCH (ENV) - Branching from YELLOW (node_31 - 1974) to be "before Rio"
-  { "id": "A_CONF.151_26", "sigla": "Rio Decl.", "type": "main", "year": 1992, "y": -135, "class": "branch-env", "label": "Rio Declaration on Environment", "desc": "Economic development and the health of the planet are linked.", "parent": "node_31" },
-  
-  { "id": "A_RES_47_133", "sigla": "Res. 47/133", "type": "minor", "year": 1992, "y": 45, "class": "branch-civil", "label": "Protection from Enforced Disappearance", "desc": "Political response to enforced disappearances.", "parent": "A_RES_45_111" },
-  
-  { "id": "A_RES_48_104", "sigla": "Res. 48/104", "type": "main", "year": 1993, "y": 90, "class": "branch-women", "label": "Declaration on Violence against Women", "desc": "Violence against women is a public human rights violation.", "parent": "CEDAW" },
-  
-  { "id": "A_CONF.157_23", "sigla": "Vienna", "type": "minor", "year": 1993, "y": 45, "class": "branch-civil", "label": "Vienna Declaration", "desc": "Human rights are universal, indivisible, and interdependent.", "parent": "A_RES_47_133" },
-  
-  { "id": "node_52", "sigla": "DOC", "type": "main", "year": 1997, "y": -90, "class": "branch-social", "label": "Declaration on Human Genome", "desc": "The human genome is the heritage of humanity.", "parent": "CRC" },
-  
-  { "id": "A_RES_53_144", "sigla": "Res. 53/144", "type": "minor", "year": 1998, "y": 45, "class": "branch-civil", "label": "Human Rights Defenders", "desc": "Protects activists who defend rights.", "parent": "A_CONF.157_23" },
-  { "id": "OP-CEDAW", "sigla": "OP-CEDAW", "type": "minor", "year": 1999, "y": 45, "class": "branch-civil", "label": "Optional Protocol to CEDAW", "desc": "Individual complaints for women's rights violations.", "parent": "A_RES_53_144" },
-  { "id": "node_56", "sigla": "DOC", "type": "minor", "year": 2001, "y": 135, "class": "branch-coll", "label": "Declaration on Cultural Diversity", "desc": "Cultural diversity is as necessary as biodiversity.", "parent": "A_RES_47_135" },
-  { "id": "node_17", "sigla": "OP-CAT", "type": "minor", "year": 2002, "y": 45, "class": "branch-civil", "label": "Optional Protocol CAT", "desc": "System of inspection visits to places of detention.", "parent": "OP-CEDAW" },
-  { "id": "OP-CRPD", "sigla": "OP-CRPD", "type": "minor", "year": 2006, "y": 45, "class": "branch-civil", "label": "Optional Protocol CRPD", "desc": "Complaints mechanism for disability rights violations.", "parent": "node_17" },
-  
-  { "id": "CRPD", "sigla": "CRPD", "type": "main", "year": 2006, "y": -90, "class": "branch-social", "label": "Convention on Persons with Disabilities", "desc": "Persons with disabilities as active subjects with full legal capacity.", "parent": "node_52" },
-  
-  { "id": "CPED", "sigla": "CPED", "type": "main", "year": 2006, "y": 45, "class": "branch-civil", "label": "Convention on Enforced Disappearance", "desc": "Enforced disappearance as a crime against humanity.", "parent": "OP-CRPD" },
-  
-  { "id": "UNDRIP", "sigla": "UNDRIP", "type": "main", "year": 2007, "y": 135, "class": "branch-coll", "label": "Rights of Indigenous Peoples", "desc": "Rights to land, culture, and self-determination.", "parent": "node_56" },
-  
-  { "id": "node_22", "sigla": "OP-ICESCR", "type": "minor", "year": 2008, "y": -45, "class": "branch-econ", "label": "Optional Protocol ICESCR", "desc": "Makes economic rights 'justiciable' via individual complaints.", "parent": "CMW" },
-  { "id": "A_RES_65_229", "sigla": "Bangkok", "type": "minor", "year": 2010, "y": 90, "class": "branch-women", "label": "Bangkok Rules", "desc": "Rules for the treatment of female prisoners.", "parent": "A_RES_48_104" },
-  
-  { "id": "node_23", "sigla": "UNGPs", "type": "main", "year": 2011, "y": -135, "class": "branch-env", "label": "Guiding Principles on Business", "desc": "Corporations have a responsibility to respect human rights.", "parent": "A_CONF.151_26" },
-  
-  { "id": "OP-CRC-IC", "sigla": "OP-CRC-IC", "type": "minor", "year": 2011, "y": 45, "class": "branch-civil", "label": "Protocol CRC Communications", "desc": "Gives children a direct voice for complaints to the UN.", "parent": "CPED" },
-  { "id": "node_61", "sigla": "Res. 21/11", "type": "minor", "year": 2012, "y": -45, "class": "branch-econ", "label": "Principles on Extreme Poverty", "desc": "Extreme poverty as a violation of human dignity.", "parent": "node_22" },
-  { "id": "A_RES_70_175", "sigla": "Mandela", "type": "minor", "year": 2015, "y": 45, "class": "branch-civil", "label": "Nelson Mandela Rules", "desc": "Prohibits prolonged solitary confinement.", "parent": "OP-CRC-IC" },
-  { "id": "A_RES_73_165", "sigla": "Res. 73/165", "type": "minor", "year": 2018, "y": -45, "class": "branch-econ", "label": "Rights of Peasants", "desc": "Protects small farmers from land speculation.", "parent": "node_61" },
-  
-  { "id": "A_RES_76_300", "sigla": "Res. 76/300", "type": "main", "year": 2022, "y": -135, "class": "branch-env", "label": "Right to Clean Environment", "desc": "Clean environment formally recognized as a human right.", "parent": "node_23" }
-];
+            { "id": "unc", "sigla": "UNC", "type": "main", "year": 1945, "y": 0, "class": "root", 
+              "label": { en: "United Nations Charter", it: "Carta delle Nazioni Unite" },
+              "desc": { 
+                  en: "Signed on June 26, 1945, in San Francisco, the UN Charter is the foundational treaty of modern international law, forged in the aftermath of World War II's devastation and the horrors of the Holocaust. While its primary focus was the maintenance of international peace and security to prevent a third global conflict, Article 1(3) established the 'promotion and encouragement of respect for human rights and for fundamental freedoms' as a core purpose of the UN for the first time in history. However, the Charter did not define what 'human rights' actually were, nor did it create an effective enforcement mechanism. This vagueness was a diplomatic necessity to accommodate the sovereignty concerns of the Great Powers (US, UK, USSR), all of whom feared international scrutiny regarding their own domestic issues, such as racial segregation, colonial rule, and the gulag system. Article 2(7) explicitly prohibited the UN from intervening in matters 'essentially within the domestic jurisdiction of any state', creating a legal tension between sovereignty and rights that persists today.", 
+                  it: "Firmata il 26 giugno 1945 a San Francisco, la Carta delle Nazioni Unite è il trattato fondante del diritto internazionale moderno, forgiato all'indomani della devastazione della Seconda Guerra Mondiale e degli orrori dell'Olocausto. Sebbene il suo obiettivo primario fosse il mantenimento della pace e della sicurezza internazionale per prevenire un terzo conflitto globale, l'Articolo 1(3) stabilì la 'promozione e l'incoraggiamento del rispetto dei diritti umani e delle libertà fondamentali' come scopo fondamentale dell'ONU per la prima volta nella storia. Tuttavia, la Carta non definiva cosa fossero effettivamente i 'diritti umani', né creava un meccanismo di applicazione efficace. Questa vaghezza era una necessità diplomatica per accogliere le preoccupazioni sulla sovranità delle Grandi Potenze (USA, Regno Unito, URSS), tutte timorose di uno scrutinio internazionale sulle proprie questioni interne, come la segregazione razziale, il dominio coloniale e il sistema dei gulag. L'Articolo 2(7) proibiva esplicitamente all'ONU di intervenire in questioni 'essenzialmente di competenza interna di uno stato', creando una tensione legale tra sovranità e diritti che persiste ancora oggi." 
+              }, 
+              "link": "https://www.un.org/en/about-us/un-charter/full-text", "ratifications": 193, "parent": null },
+
+            { "id": "unchr_comm", "sigla": "UNCHR", "type": "minor", "year": 1946, "y": 0, "class": "root", 
+              "label": { en: "UN Commission on Human Rights", it: "Commissione ONU Diritti Umani" },
+              "desc": { 
+                  en: "Established by the Economic and Social Council (ECOSOC) in 1946, this body was tasked with the monumental job of drafting the 'International Bill of Rights'. Under the visionary and persistent chairmanship of Eleanor Roosevelt, it became the primary political forum for human rights within the UN system. For decades, it was the only international body capable of setting global standards and investigating violations. However, in its later years, it faced severe and justified criticism for 'politicization' and 'selectivity', as serial human rights abusers frequently sought and obtained membership specifically to shield themselves from scrutiny and criticism. This crisis of credibility eventually led to its dissolution and replacement by the Human Rights Council in 2006, marking a significant attempt to reform the UN's human rights machinery.", 
+                  it: "Istituita dal Consiglio Economico e Sociale (ECOSOC) nel 1946, questa commissione ebbe il compito monumentale di redigere la 'Carta Internazionale dei Diritti'. Sotto la presidenza visionaria e tenace di Eleanor Roosevelt, divenne il principale forum politico per i diritti umani all'interno del sistema ONU. Per decenni, è stato l'unico organismo internazionale in grado di stabilire standard globali e indagare sulle violazioni. Tuttavia, nei suoi ultimi anni, affrontò critiche severe e giustificate per 'politicizzazione' e 'selettività', poiché i violatori seriali dei diritti umani cercavano e ottenevano frequentemente l'adesione proprio per proteggersi dallo scrutinio e dalle critiche. Questa crisi di credibilità portò infine al suo scioglimento e alla sostituzione con il Consiglio dei Diritti Umani nel 2006, segnando un tentativo significativo di riformare la macchina dei diritti umani dell'ONU." 
+              }, 
+              "parent": "unc" },
+
+            { "id": "udhr", "sigla": "UDHR", "type": "main", "year": 1948, "y": 0, "class": "root", 
+              "label": { en: "Universal Declaration of Human Rights", it: "Dichiarazione Universale Diritti Umani" },
+              "desc": { 
+                  en: "Adopted on December 10, 1948, at the Palais de Chaillot in Paris via General Assembly Resolution 217A. The UDHR is the cornerstone of the entire human rights protection system and represents the first global expression of rights to which *all* human beings are inherently entitled, regardless of race, color, religion, sex, language, political or other opinion, national or social origin, property, birth or other status. It contains 30 articles covering both civil-political rights (freedom from torture, free speech, fair trial) and economic-social rights (health, education, standard of living). Drafting it was a massive challenge involving diverse philosophical traditions (Western, Chinese, Lebanese, French). Although technically a 'Declaration' and not a binding treaty—mostly due to the lack of consensus at the time regarding enforcement—it has arguably gained the status of *Customary International Law*, meaning its core principles are now binding on all states regardless of ratification.", 
+                  it: "Adottata il 10 dicembre 1948 al Palais de Chaillot di Parigi con la Risoluzione 217A dell'Assemblea Generale. La DUDU è la pietra miliare dell'intero sistema di protezione dei diritti umani e rappresenta la prima espressione globale dei diritti a cui *tutti* gli esseri umani hanno titolo inerente, indipendentemente da razza, colore, religione, sesso, lingua, opinione politica o di altro tipo, origine nazionale o sociale, proprietà, nascita o altro status. Contiene 30 articoli che coprono sia i diritti civili-politici (libertà dalla tortura, libertà di parola, giusto processo) sia i diritti economico-sociali (salute, istruzione, tenore di vita). La sua stesura fu una sfida enorme che coinvolse diverse tradizioni filosofiche (occidentale, cinese, libanese, francese). Sebbene tecnicamente sia una 'Dichiarazione' e non un trattato vincolante—principalmente a causa della mancanza di consenso all'epoca sull'applicazione—ha probabilmente acquisito lo status di *Diritto Internazionale Consuetudinario*, il che significa che i suoi principi fondamentali sono ora vincolanti per tutti gli stati, indipendentemente dalla ratifica." 
+              }, 
+              "link": "https://www.un.org/en/about-us/universal-declaration-of-human-rights", "parent": "unchr_comm" },
+            
+            { "id": "node_2", "sigla": "DOC", "type": "main", "year": 1960, "y": 135, "class": "branch-coll", 
+              "label": { en: "Declaration on Granting Independence", it: "Dichiarazione sull'Indipendenza" },
+              "desc": { 
+                  en: "Known as the 'Magna Carta of Decolonization'. By 1960, the UN General Assembly composition had changed dramatically with the entry of newly independent African and Asian states. This declaration asserted that the subjection of peoples to alien subjugation, domination, and exploitation constitutes a denial of fundamental human rights, is contrary to the Charter of the United Nations, and is an impediment to the promotion of world peace and co-operation. It explicitly stated that 'inadequacy of political, economic, social or educational preparedness should never serve as a pretext for delaying independence', directly challenging the colonial narrative of 'civilizing missions'. It shifted self-determination from a political principle to a fundamental legal right.", 
+                  it: "Conosciuta come la 'Magna Carta della Decolonizzazione'. Nel 1960, la composizione dell'Assemblea Generale dell'ONU era cambiata radicalmente con l'ingresso dei nuovi stati africani e asiatici indipendenti. Questa dichiarazione affermava che la sottomissione dei popoli al giogo, al dominio e allo sfruttamento stranieri costituisce una negazione dei diritti umani fondamentali, è contraria alla Carta delle Nazioni Unite ed è un impedimento alla promozione della pace e della cooperazione mondiale. Dichiarava esplicitamente che 'l'inadeguatezza della preparazione politica, economica, sociale o educativa non deve mai servire come pretesto per ritardare l'indipendenza', sfidando direttamente la narrazione coloniale delle 'missioni civilizzatrici'. Ha trasformato l'autodeterminazione da principio politico a diritto legale fondamentale." 
+              }, 
+              "related": ["unc"], "parent": "udhr" },
+            
+            { "id": "A_RES_1514(XV)", "sigla": "Res. 1514", "type": "minor", "year": 1960, "y": 135, "class": "branch-coll", 
+              "label": { en: "General Assembly Resolution 1514", it: "Risoluzione 1514 Assemblea Generale" },
+              "desc": { 
+                  en: "This is the operational resolution accompanying the Declaration on Independence. It marked a seismic shift in international law: previously, colonialism was largely considered a domestic affair of the empire. Resolution 1514 internationalized the issue, making self-determination a legal right rather than just a political aspiration. It authorized the UN to actively monitor and pressure colonial powers (such as Portugal and South Africa) to relinquish control, fundamentally altering the geopolitical landscape of the 20th century.", 
+                  it: "Questa è la risoluzione operativa che accompagna la Dichiarazione sull'Indipendenza. Segnò un cambiamento sismico nel diritto internazionale: in precedenza, il colonialismo era considerato in gran parte un affare interno dell'impero. La Risoluzione 1514 internazionalizzò la questione, rendendo l'autodeterminazione un diritto legale piuttosto che una semplice aspirazione politica. Autorizzò l'ONU a monitorare attivamente e a fare pressione sulle potenze coloniali (come Portogallo e Sudafrica) affinché rinunciassero al controllo, alterando radicalmente il panorama geopolitico del XX secolo." 
+              }, 
+              "parent": "node_2" },
+            
+            { "id": "node_27", "sigla": "Res. 1803", "type": "minor", "year": 1962, "y": -45, "class": "branch-econ", 
+              "label": { en: "Permanent Sovereignty over Natural Resources", it: "Sovranità sulle Risorse Naturali" },
+              "desc": { 
+                  en: "A crucial legal doctrine for the 'Global South'. Following political independence, many new nations realized they still lacked economic control due to foreign concessions and extraction contracts signed under colonial rule. This resolution declared that the right of peoples to freely use and exploit their natural wealth and resources is inherent to their sovereignty. It challenged the traditional Western legal view that prioritized the protection of foreign investments, asserting that nationalization was a sovereign right if done for public utility, security, or national interest.", 
+                  it: "Una dottrina legale cruciale per il 'Global South'. Dopo l'indipendenza politica, molte nuove nazioni si resero conto di mancare ancora di controllo economico a causa di concessioni straniere e contratti di estrazione firmati sotto il dominio coloniale. Questa risoluzione dichiarò che il diritto dei popoli di usare e sfruttare liberamente le proprie ricchezze e risorse naturali è inerente alla loro sovranità. Sfidò la tradizionale visione legale occidentale che dava priorità alla protezione degli investimenti esteri, affermando che la nazionalizzazione era un diritto sovrano se effettuata per pubblica utilità, sicurezza o interesse nazionale." 
+              }, 
+              "parent": "udhr" },
+
+            { "id": "node_28", "sigla": "Res. 1904", "type": "minor", "year": 1963, "y": 45, "class": "branch-civil", 
+              "label": { en: "Declaration on Racial Discrimination", it: "Dichiarazione sulla Discriminazione Razziale" },
+              "desc": { 
+                  en: "The UN's first organized legal response to the institutionalized racism of Apartheid in South Africa and segregation in the United States. It declared that any doctrine of racial differentiation or superiority is scientifically false, morally condemnable, socially unjust, and dangerous. It stated there is no justification for racial discrimination anywhere, in theory or in practice. It was a direct precursor to the binding convention, driven by the urgency of the civil rights movements and the anti-apartheid struggle globally.", 
+                  it: "La prima risposta legale organizzata dell'ONU al razzismo istituzionalizzato dell'Apartheid in Sudafrica e della segregazione negli Stati Uniti. Dichiarò che qualsiasi dottrina di differenziazione o superiorità razziale è scientificamente falsa, moralmente condannabile, socialmente ingiusta e pericolosa. Affermò che non esiste alcuna giustificazione per la discriminazione razziale ovunque, in teoria o in pratica. Fu un precursore diretto della convenzione vincolante, spinto dall'urgenza dei movimenti per i diritti civili e dalla lotta anti-apartheid a livello globale." 
+              }, 
+              "parent": "udhr" },
+            
+            { "id": "ICERD", "sigla": "ICERD", "type": "main", "year": 1965, "y": 45, "class": "branch-civil", 
+              "label": { en: "Convention on Racial Discrimination", it: "Convenzione contro Discriminazione Razziale" },
+              "desc": { 
+                  en: "The **International Convention on the Elimination of All Forms of Racial Discrimination (ICERD)** was the first core binding human rights treaty to be adopted by the UN. It was prioritized over the general covenants due to the global outrage against Apartheid. It defines racial discrimination broadly and obliges states to not only abstain from discrimination but to take positive measures (affirmative action) to eliminate it. It created the CERD Committee, the first 'Treaty Body' to monitor state compliance, setting the model for all future conventions. It requires states to criminalize dissemination of ideas based on racial superiority or hatred.", 
+                  it: "La **Convenzione Internazionale sull'Eliminazione di ogni Forma di Discriminazione Razziale (ICERD)** è stata il primo trattato fondamentale vincolante sui diritti umani adottato dall'ONU. È stata prioritaria rispetto ai patti generali a causa dell'indignazione globale contro l'Apartheid. Definisce la discriminazione razziale in modo ampio e obbliga gli stati non solo ad astenersi dalla discriminazione, ma ad adottare misure positive (azioni affermative) per eliminarla. Ha creato il Comitato CERD, il primo 'Organismo dei Trattati' per monitorare la conformità degli stati, stabilendo il modello per tutte le convenzioni future. Richiede agli stati di criminalizzare la diffusione di idee basate sulla superiorità razziale o sull'odio." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/international-convention-elimination-all-forms-racial", "ratifications": 182, "related": ["node_28"], "parent": "node_28" },
+            
+            { "id": "iccpr", "sigla": "ICCPR & OP1", "type": "main", "year": 1966, "y": 45, "class": "branch-civil", 
+              "label": { en: "ICCPR & Optional Protocol 1", it: "ICCPR & Protocollo Opzionale 1" },
+              "desc": { 
+                  en: "The 'Western' pillar of the International Bill of Rights. Due to Cold War ideological disagreements, the UDHR was split into two separate treaties. The **International Covenant on Civil and Political Rights (ICCPR)** protects 'negative' rights (freedom from state interference): right to life, free speech, fair trial, voting, and freedom of religion. It created the Human Rights Committee to monitor implementation. **Optional Protocol 1 (OP1)** was revolutionary: it allowed individuals, for the first time in history, to file complaints directly to the UN against their own government, piercing the veil of state sovereignty.", 
+                  it: "Il pilastro 'Occidentale' della Carta Internazionale dei Diritti. A causa dei disaccordi ideologici della Guerra Fredda, la DUDU fu divisa in due trattati separati. Il **Patto Internazionale sui Diritti Civili e Politici (ICCPR)** protegge i diritti 'negativi' (libertà dall'interferenza statale): diritto alla vita, libertà di parola, giusto processo, voto e libertà di religione. Ha creato il Comitato per i Diritti Umani per monitorare l'attuazione. Il **Protocollo Opzionale 1 (OP1)** fu rivoluzionario: permise agli individui, per la prima volta nella storia, di presentare reclami direttamente all'ONU contro il proprio governo, squarciando il velo della sovranità statale." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/international-covenant-civil-and-political-rights", "ratifications": 173, "related": ["udhr"], "parent": "ICERD" },
+            
+            { "id": "icescr", "sigla": "ICESCR", "type": "main", "year": 1966, "y": -45, "class": "branch-econ", 
+              "label": { en: "Covenant on Economic, Social Rights", it: "Patto sui Diritti Economici e Sociali" },
+              "desc": { 
+                  en: "The 'Socialist' pillar of the Bill of Rights. The **International Covenant on Economic, Social and Cultural Rights (ICESCR)** protects 'positive' rights requiring state action and investment: right to work, health, education, housing, and social security. Unlike the ICCPR which demands immediate compliance, Article 2(1) of the ICESCR allows for **'progressive realization'** based on the maximum of available resources. This clause has historically been used by states to excuse inaction, treating these rights as mere aspirations rather than legal obligations. It took decades of jurisprudence to establish that these rights are indeed justiciable and that states have immediate core obligations.", 
+                  it: "Il pilastro 'Socialista' della Carta dei Diritti. Il **Patto Internazionale sui Diritti Economici, Sociali e Culturali (ICESCR)** protegge i diritti 'positivi' che richiedono azione e investimenti statali: diritto al lavoro, alla salute, all'istruzione, all'alloggio e alla sicurezza sociale. A differenza dell'ICCPR che richiede conformità immediata, l'Articolo 2(1) dell'ICESCR consente una **'realizzazione progressiva'** basata sul massimo delle risorse disponibili. Questa clausola è stata storicamente utilizzata dagli stati per giustificare l'inazione, trattando questi diritti come mere aspirazioni piuttosto che obblighi legali. Ci sono voluti decenni di giurisprudenza per stabilire che questi diritti sono effettivamente giustiziabili e che gli stati hanno obblighi fondamentali immediati." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/international-covenant-economic-social-and-cultural-rights", "ratifications": 171, "related": ["udhr"], "parent": "node_27" },
+            
+            { "id": "node_29", "sigla": "Res. 2542", "type": "minor", "year": 1969, "y": -90, "class": "branch-social", 
+              "label": { en: "Declaration on Social Progress", it: "Dichiarazione sul Progresso Sociale" },
+              "desc": { 
+                  en: "This declaration attempted to bridge the gap between economic growth and human rights. It affirmed that social progress and economic growth are not ends in themselves but means to achieve human dignity. It emphasized that rapid industrialization should not come at the cost of the social fabric or human rights, foreshadowing later debates on sustainable development and corporate responsibility.", 
+                  it: "Questa dichiarazione tentò di colmare il divario tra crescita economica e diritti umani. Affermò che il progresso sociale e la crescita economica non sono fini a se stessi ma mezzi per raggiungere la dignità umana. Sottolineò che la rapida industrializzazione non doveva avvenire a costo del tessuto sociale o dei diritti umani, prefigurando i dibattiti successivi sullo sviluppo sostenibile e sulla responsabilità d'impresa." 
+              }, 
+              "parent": "icescr" },
+
+            { "id": "node_30", "sigla": "Res. 2856", "type": "minor", "year": 1971, "y": -90, "class": "branch-social", 
+              "label": { en: "Rights of Mentally Retarded Persons", it: "Diritti Persone con Ritardo Mentale" },
+              "desc": { 
+                  en: "While the terminology 'mentally retarded' is now considered offensive and obsolete, this was a pioneering document in 1971. It was the first to assert that persons with intellectual disabilities have, to the maximum degree of feasibility, the same rights as other human beings, including the right to proper medical care, education, and protection from exploitation. It began the shift away from pure institutionalization and exclusion.", 
+                  it: "Sebbene la terminologia 'ritardato mentale' sia ora considerata offensiva e obsoleta, questo fu un documento pionieristico nel 1971. Fu il primo ad affermare che le persone con disabilità intellettive hanno, nel massimo grado possibile, gli stessi diritti degli altri esseri umani, incluso il diritto a cure mediche adeguate, istruzione e protezione dallo sfruttamento. Iniziò l'allontanamento dalla pura istituzionalizzazione ed esclusione." 
+              }, 
+              "parent": "node_29" },
+
+            { "id": "node_31", "sigla": "DOC", "type": "minor", "year": 1974, "y": -45, "class": "branch-econ", 
+              "label": { en: "Declaration on Eradication of Hunger", it: "Dichiarazione Eradicazione Fame" },
+              "desc": { 
+                  en: "Adopted at the World Food Conference during a global food crisis. It proclaimed that 'every man, woman and child has the inalienable right to be free from hunger and malnutrition'. It linked food security directly to the right to life and dignity, arguing that the resources to end hunger exist globally, but political will and fair distribution systems are lacking.", 
+                  it: "Adottata alla Conferenza Mondiale sull'Alimentazione durante una crisi alimentare globale. Proclamò che 'ogni uomo, donna e bambino ha il diritto inalienabile di essere libero dalla fame e dalla malnutrizione'. Collegò la sicurezza alimentare direttamente al diritto alla vita e alla dignità, sostenendo che le risorse per porre fine alla fame esistono a livello globale, ma mancano volontà politica ed equa distribuzione." 
+              }, 
+              "parent": "icescr" },
+
+            { "id": "node_32", "sigla": "Res. 3318", "type": "minor", "year": 1974, "y": 90, "class": "branch-women", 
+              "label": { en: "Protection of Women in Emergency", it: "Protezione Donne in Emergenza" },
+              "desc": { 
+                  en: "This resolution focused on the specific vulnerability of women and children in armed conflict and emergency situations. It prohibited attacks, shelling, and inhuman treatment specifically targeting civilian women, acknowledging that modern warfare often disproportionately affects non-combatants and that sexual violence is often used as a weapon of war.", 
+                  it: "Questa risoluzione si concentrava sulla specifica vulnerabilità di donne e bambini nei conflitti armati e nelle situazioni di emergenza. Vietava attacchi, bombardamenti e trattamenti disumani mirati specificamente alle donne civili, riconoscendo che la guerra moderna colpisce spesso in modo sproporzionato i non combattenti e che la violenza sessuale è spesso usata come arma di guerra." 
+              }, 
+              "parent": "iccpr" },
+
+            { "id": "node_35", "sigla": "Res. 3452", "type": "minor", "year": 1975, "y": 45, "class": "branch-civil", 
+              "label": { en: "Declaration against Torture", it: "Dichiarazione contro la Tortura" },
+              "desc": { 
+                  en: "Adopted unanimously by the General Assembly, this was a moral condemnation that prepared the ground for the binding 1984 convention. It was driven by reports of systematic torture in military dictatorships in Latin America (Chile, Argentina) and Greece. It defined torture as an aggravated and deliberate form of cruel, inhuman, or degrading treatment.", 
+                  it: "Adottata all'unanimità dall'Assemblea Generale, questa fu una condanna morale che preparò il terreno per la convenzione vincolante del 1984. Fu spinta dai rapporti sulla tortura sistematica nelle dittature militari in America Latina (Cile, Argentina) e Grecia. Definì la tortura come una forma aggravata e deliberata di trattamento crudele, disumano o degradante." 
+              }, 
+              "parent": "iccpr" },
+
+            { "id": "node_34", "sigla": "Res. 3447", "type": "main", "year": 1975, "y": -90, "class": "branch-social", 
+              "label": { en: "Rights of Disabled Persons", it: "Diritti delle Persone Disabili" },
+              "desc": { 
+                  en: "This document marked a paradigm shift from the 'medical/charity model' (viewing disability as a defect to be fixed or pitied) to a 'rights-based model'. It recognized the right to medical treatment, rehabilitation, education, and social integration, aiming to enable the fullest possible participation in society. It laid the intellectual groundwork for the CRPD decades later.", 
+                  it: "Questo documento segnò un cambio di paradigma dal 'modello medico/caritatevole' (vedere la disabilità come un difetto da correggere o compatire) a un 'modello basato sui diritti'. Riconobbe il diritto alle cure mediche, alla riabilitazione, all'istruzione e all'integrazione sociale, mirando a consentire la massima partecipazione possibile alla società. Pose le basi intellettuali per la CRPD decenni dopo." 
+              }, 
+              "parent": "node_30" },
+
+            { "id": "node_33", "sigla": "Res. 3384", "type": "minor", "year": 1975, "y": 135, "class": "branch-coll", 
+              "label": { en: "Use of Scientific Progress", it: "Uso del Progresso Scientifico" },
+              "desc": { 
+                  en: "Framed within the context of the Cold War and the nuclear arms race. It stated that all states have a duty to ensure scientific and technological progress is used for the benefit of peace and human rights, not for weapons of mass destruction or tools of repression/surveillance. It highlights the dual-use nature of technology.", 
+                  it: "Inquadrata nel contesto della Guerra Fredda e della corsa agli armamenti nucleari. Stabilì che tutti gli stati hanno il dovere di garantire che il progresso scientifico e tecnologico sia utilizzato a beneficio della pace e dei diritti umani, non per armi di distruzione di massa o strumenti di repressione/sorveglianza. Evidenzia la natura a duplice uso della tecnologia." 
+              }, 
+              "parent": "A_RES_1514(XV)" },
+
+            { "id": "node_36", "sigla": "DOC", "type": "minor", "year": 1978, "y": 45, "class": "branch-civil", 
+              "label": { en: "Declaration on Race (UNESCO)", it: "Dichiarazione sulla Razza (UNESCO)" },
+              "desc": { 
+                  en: "A definitive scientific and ethical rejection of racism. It dismissed all biological justifications for racism, declaring that 'all human beings belong to a single species' and that theories of racial superiority are scientifically false, morally condemnable, and socially unjust. It targeted the intellectual underpinnings of Apartheid and other segregationist ideologies.", 
+                  it: "Un rifiuto scientifico ed etico definitivo del razzismo. Respinse tutte le giustificazioni biologiche del razzismo, dichiarando che 'tutti gli esseri umani appartengono a una sola specie' e che le teorie della superiorità razziale sono scientificamente false, moralmente condannabili e socialmente ingiuste. Prese di mira le basi intellettuali dell'Apartheid e di altre ideologie segregazioniste." 
+              }, 
+              "parent": "node_35" },
+            
+            { "id": "CEDAW", "sigla": "CEDAW", "type": "main", "year": 1979, "y": 90, "class": "branch-women", 
+              "label": { en: "Convention on Discrimination against Women", it: "Convenzione contro Discriminazione Donne" },
+              "desc": { 
+                  en: "Often called the **'International Bill of Rights for Women'**. The CEDAW defines discrimination against women and sets up an agenda for national action to end such discrimination. Uniquely, it targets not just state laws, but also culture, tradition, and private stereotypes as forces that must change to achieve 'substantive equality', not just formal legal equality. It is one of the most ratified treaties but also has the most reservations, often due to religious or cultural objections by states unwilling to change domestic family laws.", 
+                  it: "Spesso chiamata la **'Carta dei Diritti delle Donne'**. La CEDAW definisce la discriminazione contro le donne e stabilisce un programma di azione nazionale per porvi fine. Unicamente, non mira solo alle leggi statali, ma anche alla cultura, alla tradizione e agli stereotipi privati come forze che devono cambiare per raggiungere un''uguaglianza sostanziale', non solo formale. È uno dei trattati più ratificati ma ha anche il maggior numero di riserve, spesso a causa di obiezioni religiose o culturali da parte di stati non disposti a cambiare le leggi familiari interne." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-elimination-all-forms-discrimination-against-women", "ratifications": 189, "related": ["udhr", "iccpr"], "parent": "node_32" },
+            
+            { "id": "A_RES_36_55", "sigla": "Res. 36/55", "type": "main", "year": 1981, "y": 45, "class": "branch-civil", 
+              "label": { en: "Declaration on Intolerance and Religion", it: "Dichiarazione su Intolleranza e Religione" },
+              "desc": { 
+                  en: "The primary UN instrument on religious freedom. It protects the right to have a religion, to change it, to practice it in public or private, and protects parents' rights to educate children in their faith. It was extremely difficult to negotiate due to Soviet atheism and increasing religious tensions in various parts of the world. It remains a Declaration rather than a Convention due to lack of global consensus on the limits of religious expression.", 
+                  it: "Il principale strumento ONU sulla libertà religiosa. Protegge il diritto di avere una religione, di cambiarla, di praticarla in pubblico o in privato e protegge i diritti dei genitori di educare i figli nella propria fede. Fu estremamente difficile da negoziare a causa dell'ateismo sovietico e delle crescenti tensioni religiose nel mondo. Rimane una Dichiarazione piuttosto che una Convenzione a causa della mancanza di consenso globale sui limiti dell'espressione religiosa." 
+              }, 
+              "parent": "node_36" },
+
+            { "id": "A_RES_37_194", "sigla": "Res. 37/194", "type": "minor", "year": 1982, "y": 45, "class": "branch-civil", 
+              "label": { en: "Medical Ethics in Detention", it: "Etica Medica in Detenzione" },
+              "desc": { 
+                  en: "Principles of Medical Ethics relevant to health personnel, particularly physicians. It declares it a gross contravention of medical ethics (and a violation of the Hippocratic Oath) for health personnel to engage, actively or passively, in acts of torture or to certify a prisoner is 'fit' for punishment. It separates the role of healer from the role of jailer.", 
+                  it: "Principi di Etica Medica rilevanti per il personale sanitario, in particolare i medici. Dichiara una grave violazione dell'etica medica (e del Giuramento di Ippocrate) che il personale sanitario partecipi, attivamente o passivamente, ad atti di tortura o certifichi che un prigioniero è 'idoneo' alla punizione. Separa il ruolo del guaritore da quello del carceriere." 
+              }, 
+              "parent": "A_RES_36_55" },
+
+            { "id": "E_RES_1984_50", "sigla": "Res. 84/50", "type": "minor", "year": 1984, "y": 45, "class": "branch-civil", 
+              "label": { en: "Death Penalty Safeguards", it: "Garanzie Pena di Morte" },
+              "desc": { 
+                  en: "While the UN could not yet achieve a total ban on the death penalty due to opposition from the US, China, and Islamic states, this resolution established strict legal safeguards (the 'Super Due Process'). Capital punishment can only be imposed for the 'most serious crimes' (intentional killing), never on pregnant women or new mothers, never on persons under 18, and only after a final judgment with all appeal rights exhausted.", 
+                  it: "Mentre l'ONU non poteva ancora raggiungere un divieto totale della pena di morte a causa dell'opposizione di USA, Cina e stati islamici, questa risoluzione stabilì rigorose garanzie legali (il 'Super Due Process'). La pena capitale può essere imposta solo per i 'crimini più gravi' (omicidio intenzionale), mai su donne incinte o neomamme, mai su minori di 18 anni, e solo dopo una sentenza definitiva con tutti i diritti di appello esauriti." 
+              }, 
+              "parent": "A_RES_37_194" },
+
+            { "id": "A_RES_39_11", "sigla": "Res. 39/11", "type": "minor", "year": 1984, "y": 135, "class": "branch-coll", 
+              "label": { en: "Right of Peoples to Peace", it: "Diritto dei Popoli alla Pace" },
+              "desc": { 
+                  en: "Declared that the peoples of our planet have a sacred right to peace. It shifted the concept of peace from a mere absence of war between states (state security) to a human right necessary for the realization of all other rights (human security). It implies a duty for states to disarm and solve conflicts peacefully.", 
+                  it: "Dichiarò che i popoli del nostro pianeta hanno un sacro diritto alla pace. Spostò il concetto di pace da una mera assenza di guerra tra stati (sicurezza di stato) a un diritto umano necessario per la realizzazione di tutti gli altri diritti (sicurezza umana). Implica un dovere per gli stati di disarmare e risolvere i conflitti pacificamente." 
+              }, 
+              "parent": "node_33" },
+            
+            { "id": "CAT", "sigla": "CAT", "type": "main", "year": 1984, "y": 45, "class": "branch-civil", 
+              "label": { en: "Convention against Torture", it: "Convenzione contro la Tortura" },
+              "desc": { 
+                  en: "Established the **absolute ban** on torture. No exceptional circumstances (war, terror, emergency) can ever justify it. Crucially, it enshrined the principle of **Non-Refoulement** (Art. 3): no one can be deported or extradited to a country where there are substantial grounds for believing they would be in danger of being subjected to torture. It also established 'Universal Jurisdiction' for torturers: they can be prosecuted anywhere in the world, regardless of where the crime was committed.", 
+                  it: "Ha stabilito il **divieto assoluto** di tortura. Nessuna circostanza eccezionale (guerra, terrore, emergenza) può mai giustificarla. Crucialmente, ha sancito il principio di **Non-Refoulement** (Art. 3): nessuno può essere deportato o estradato in un paese dove vi sono fondati motivi per ritenere che sarebbe in pericolo di essere sottoposto a tortura. Ha anche stabilito la 'Giurisdizione Universale' per i torturatori: possono essere perseguiti ovunque nel mondo, indipendentemente da dove il crimine è stato commesso." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-against-torture-and-other-cruel-inhuman-or-degrading", "ratifications": 173, "related": ["node_35"], "parent": "E_RES_1984_50" },
+            
+            { "id": "A_RES_40_32", "sigla": "Res. 40/32", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", 
+              "label": { en: "Independence of Judiciary", it: "Indipendenza della Magistratura" },
+              "desc": { 
+                  en: "Basic Principles on the Independence of the Judiciary. It asserts that judges must decide matters impartially, on the basis of facts and in accordance with the law, without any restrictions, improper influences, inducements, or pressures. It protects judges from arbitrary removal and ensures their security of tenure, preventing political interference in justice, which is a prerequisite for a fair trial.", 
+                  it: "Principi fondamentali sull'Indipendenza della Magistratura. Afferma che i giudici devono decidere le questioni in modo imparziale, sulla base dei fatti e in conformità con la legge, senza restrizioni, influenze improprie, incentivi o pressioni. Protegge i giudici dalla rimozione arbitraria e garantisce la loro inamovibilità, prevenendo l'interferenza politica nella giustizia, prerequisito per un giusto processo." 
+              }, 
+              "parent": "CAT" },
+
+            { "id": "A_RES_40_144", "sigla": "Res. 40/144", "type": "minor", "year": 1985, "y": 45, "class": "branch-civil", 
+              "label": { en: "Rights of Non-Nationals", it: "Diritti dei Non-Cittadini" },
+              "desc": { 
+                  en: "Clarified that fundamental human rights apply to *everyone* within a state's territory, regardless of citizenship status. While states can control borders, aliens (migrants, refugees) must be treated in accordance with international law and cannot be deprived of assets or liberty arbitrarily. It affirms the principle that 'Human rights belong to the person, not the passport'.", 
+                  it: "Ha chiarito che i diritti umani fondamentali si applicano a *tutti* nel territorio di uno stato, indipendentemente dallo status di cittadinanza. Sebbene gli stati possano controllare i confini, gli stranieri (migranti, rifugiati) devono essere trattati in conformità con il diritto internazionale e non possono essere privati arbitrariamente di beni o libertà. Afferma il principio che 'i diritti umani appartengono alla persona, non al passaporto'." 
+              }, 
+              "parent": "A_RES_40_32" },
+
+            { "id": "node_9", "sigla": "DOC", "type": "minor", "year": 1986, "y": 135, "class": "branch-coll", 
+              "label": { en: "Declaration on Development", it: "Dichiarazione sullo Sviluppo" },
+              "desc": { 
+                  en: "Marked the transition of 'development' from a charitable economic goal to a human rights issue. It framed development as a comprehensive economic, social, cultural and political process, which aims at the constant improvement of the well-being of the entire population and of all individuals on the basis of their active, free and meaningful participation in development and in the fair distribution of benefits resulting therefrom.", 
+                  it: "Segnò la transizione dello 'sviluppo' da obiettivo economico caritatevole a questione di diritti umani. Inquadrò lo sviluppo come un processo economico, sociale, culturale e politico completo, che mira al costante miglioramento del benessere dell'intera popolazione e di tutti gli individui sulla base della loro partecipazione attiva, libera e significativa allo sviluppo e all'equa distribuzione dei benefici che ne derivano." 
+              }, 
+              "parent": "A_RES_39_11" },
+            
+            { "id": "A_RES_41_128", "sigla": "Res. 41/128", "type": "main", "year": 1986, "y": 135, "class": "branch-coll", 
+              "label": { en: "Right to Development", it: "Diritto allo Sviluppo" },
+              "desc": { 
+                  en: "Development is an inalienable human right. Every human person and all peoples are entitled to participate in, contribute to, and enjoy economic, social, cultural and political development. It emphasizes international cooperation and the duty of states to eliminate obstacles to development (like unfair trade practices or debt burdens). It remains controversial, with developed nations often viewing it as a demand for financial aid rather than a justiciable right, while developing nations view it as essential for sovereignty.", 
+                  it: "Lo sviluppo è un diritto umano inalienabile. Ogni persona umana e tutti i popoli hanno il diritto di partecipare, contribuire e godere dello sviluppo economico, sociale, culturale e politico. Sottolinea la cooperazione internazionale e il dovere degli stati di eliminare gli ostacoli allo sviluppo (come pratiche commerciali sleali o oneri del debito). Rimane controverso, con le nazioni sviluppate che spesso lo vedono come una richiesta di aiuti finanziari piuttosto che un diritto giustiziabile, mentre le nazioni in via di sviluppo lo considerano essenziale per la sovranità." 
+              }, 
+              "parent": "node_9" },
+            
+            { "id": "A_RES_43_173", "sigla": "Res. 43/173", "type": "minor", "year": 1988, "y": 45, "class": "branch-civil", 
+              "label": { en: "Protection of Detainees", it: "Protezione dei Detenuti" },
+              "desc": { 
+                  en: "Body of Principles for the Protection of All Persons under Any Form of Detention. Ensures rights to legal counsel, family contact, and medical care. Crucially, it prohibits 'incommunicado' detention (detention without contact with the outside world), which is often the precursor to torture and enforced disappearance. It mandates that there must be a record of the arrest and the place of custody.", 
+                  it: "Insieme di Principi per la Protezione di Tutte le Persone sottoposte a Qualsiasi Forma di Detenzione. Garantisce i diritti all'assistenza legale, al contatto familiare e alle cure mediche. Crucialmente, vieta la detenzione 'incommunicado' (detenzione senza contatto con il mondo esterno), che è spesso il precursore della tortura e della sparizione forzata. Impone che vi sia una registrazione dell'arresto e del luogo di custodia." 
+              }, 
+              "parent": "A_RES_40_144" },
+
+            { "id": "ICCPR-OP2", "sigla": "OP2-ICCPR", "type": "minor", "year": 1989, "y": 45, "class": "branch-civil", 
+              "label": { en: "Second Optional Protocol ICCPR", it: "Secondo Protocollo ICCPR" },
+              "desc": { 
+                  en: "The only global treaty explicitly aiming at the **abolition of the death penalty**. States parties must take all necessary measures to abolish the death penalty within their jurisdiction. It represents a major evolution in international law, moving the death penalty from a 'sovereign justice' issue to a human rights violation (violation of the right to life and freedom from cruel punishment).", 
+                  it: "L'unico trattato globale che mira esplicitamente all'**abolizione della pena di morte**. Gli stati parti devono adottare tutte le misure necessarie per abolire la pena di morte nella loro giurisdizione. Rappresenta un'evoluzione importante nel diritto internazionale, spostando la pena di morte da una questione di 'giustizia sovrana' a una violazione dei diritti umani (violazione del diritto alla vita e libertà da punizioni crudeli)." 
+              }, 
+              "ratifications": 90, "parent": "A_RES_43_173" },
+            
+            { "id": "CRC", "sigla": "CRC", "type": "main", "year": 1989, "y": -90, "class": "branch-social", 
+              "label": { en: "Convention on Rights of the Child", it: "Convenzione Diritti Infanzia" },
+              "desc": { 
+                  en: "The most widely ratified human rights treaty in history (ratified by every nation except the USA). It fundamentally changed the status of children from 'objects of charity/parental property' to 'subjects of rights' with agency. It established the core principle: **The Best Interests of the Child** must be a primary consideration in all actions concerning children. It covers civil rights, family environment, health, and protection from violence and exploitation, introducing the '3 Ps': Provision, Protection, and Participation.", 
+                  it: "Il trattato sui diritti umani più ampiamente ratificato della storia (ratificato da ogni nazione eccetto gli USA). Ha cambiato radicalmente lo status dei bambini da 'oggetti di carità/proprietà genitoriale' a 'soggetti di diritto' con capacità di agire. Ha stabilito il principio fondamentale: **Il Superiore Interesse del Minore** deve essere una considerazione primaria in tutte le azioni riguardanti i bambini. Copre i diritti civili, l'ambiente familiare, la salute e la protezione dalla violenza e dallo sfruttamento, introducendo le '3 P': Provvisione, Protezione e Partecipazione." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-rights-child", "ratifications": 196, "related": ["udhr"], "parent": "node_34" },
+            
+            { "id": "node_45", "sigla": "DOC", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", 
+              "label": { en: "Role of Lawyers", it: "Ruolo degli Avvocati" },
+              "desc": { 
+                  en: "Basic Principles on the Role of Lawyers. Governments must ensure that lawyers can perform their professional functions without intimidation, hindrance, harassment or improper interference. It also guarantees that everyone has the right to call upon the assistance of a lawyer of their choice to protect and establish their rights. Without independent lawyers, there is no fair trial.", 
+                  it: "Principi Base sul Ruolo degli Avvocati. I governi devono garantire che gli avvocati possano svolgere le loro funzioni professionali senza intimidazioni, ostacoli, molestie o interferenze improprie. Garantisce inoltre che ognuno abbia il diritto di avvalersi dell'assistenza di un avvocato di sua scelta per proteggere e stabilire i propri diritti. Senza avvocati indipendenti, non c'è giusto processo." 
+              }, 
+              "parent": "ICCPR-OP2" },
+            
+            { "id": "CMW", "sigla": "CMW", "type": "main", "year": 1990, "y": -45, "class": "branch-econ", 
+              "label": { en: "Convention on Migrant Workers", it: "Convenzione Lavoratori Migranti" },
+              "desc": { 
+                  en: "Protects the rights of millions of migrant workers and their families. It guarantees equality of treatment with nationals in relation to remuneration and working conditions. However, it suffers from a low ratification rate, particularly among Western receiving states, who fear it limits their ability to control immigration policies. It remains the 'forgotten' core treaty, highlighting the tension between national sovereignty over borders and universal human rights.", 
+                  it: "Protegge i diritti di milioni di lavoratori migranti e delle loro famiglie. Garantisce la parità di trattamento con i cittadini nazionali in relazione alla retribuzione e alle condizioni di lavoro. Tuttavia, soffre di un basso tasso di ratifica, in particolare tra gli stati occidentali di destinazione, che temono limiti la loro capacità di controllare le politiche di immigrazione. Rimane il trattato fondamentale 'dimenticato', evidenziando la tensione tra sovranità nazionale sui confini e diritti umani universali." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/international-convention-protection-rights-all-migrant-workers", "ratifications": 58, "parent": "node_31" },
+            
+            { "id": "A_RES_45_111", "sigla": "Res. 45/111", "type": "minor", "year": 1990, "y": 45, "class": "branch-civil", 
+              "label": { en: "Treatment of Prisoners", it: "Trattamento dei Prigionieri" },
+              "desc": { 
+                  en: "Basic Principles for the Treatment of Prisoners. Affirms that prisoners retain human rights and freedoms (except liberty), and that the purpose of the prison system is the reformation and social rehabilitation of prisoners, not just retribution. It prohibits discrimination in prisons based on race, color, sex, language, religion, political or other opinion.", 
+                  it: "Principi Base per il Trattamento dei Prigionieri. Afferma che i prigionieri mantengono i diritti umani e le libertà (eccetto la libertà di movimento), e che lo scopo del sistema carcerario è la riforma e la riabilitazione sociale dei prigionieri, non solo la punizione. Vieta la discriminazione nelle carceri basata su razza, colore, sesso, lingua, religione, opinione politica o altro." 
+              }, 
+              "parent": "node_45" },
+
+            { "id": "A_RES_47_135", "sigla": "Res. 47/135", "type": "minor", "year": 1992, "y": 135, "class": "branch-coll", 
+              "label": { en: "Rights of Minorities", it: "Diritti delle Minoranze" },
+              "desc": { 
+                  en: "Declaration on the Rights of Persons Belonging to National or Ethnic, Religious and Linguistic Minorities. Inspired by the ethnic conflicts in Yugoslavia, it mandates that States must protect the existence and identity of minorities and encourage conditions for the promotion of that identity, ensuring their effective participation in decisions.", 
+                  it: "Dichiarazione sui Diritti delle Persone Appartenenti a Minoranze Nazionali o etniche, Religiose e Linguistiche. Ispirata dai conflitti etnici in Jugoslavia, impone agli Stati di proteggere l'esistenza e l'identità delle minoranze e incoraggiare le condizioni per la promozione di tale identità, garantendo la loro effettiva partecipazione alle decisioni." 
+              }, 
+              "parent": "A_RES_41_128" },
+            
+            { "id": "A_CONF.151_26", "sigla": "Rio Decl.", "type": "main", "year": 1992, "y": -135, "class": "branch-env", 
+              "label": { en: "Rio Declaration on Environment", it: "Dichiarazione di Rio sull'Ambiente" },
+              "desc": { 
+                  en: "Adopted at the 'Earth Summit'. Principle 1 states: 'Human beings are at the centre of concerns for sustainable development.' It established the **Precautionary Principle** (lack of scientific certainty is no reason to postpone measures) and the concept of 'Common but Differentiated Responsibilities', acknowledging that developed nations polluted more and must pay more for cleanup. It linked environmental health directly to the right to a healthy life.", 
+                  it: "Adottata al 'Summit della Terra'. Il Principio 1 afferma: 'Gli esseri umani sono al centro delle preoccupazioni per lo sviluppo sostenibile'. Ha stabilito il **Principio di Precauzione** (la mancanza di certezza scientifica non è motivo per rinviare le misure) e il concetto di 'Responsabilità Comuni ma Differenziate', riconoscendo che le nazioni sviluppate hanno inquinato di più e devono pagare di più per il risanamento. Ha collegato la salute ambientale direttamente al diritto a una vita sana." 
+              }, 
+              "parent": "node_31" },
+            
+            { "id": "A_RES_47_133", "sigla": "Res. 47/133", "type": "minor", "year": 1992, "y": 45, "class": "branch-civil", 
+              "label": { en: "Enforced Disappearance", it: "Sparizioni Forzate" },
+              "desc": { 
+                  en: "A direct political response to the 'Dirty Wars' in Latin America where thousands vanished. It declared enforced disappearance an offense to human dignity and a grave violation of the rights to liberty, security, and life. It laid the groundwork for the 2006 binding convention.", 
+                  it: "Una risposta politica diretta alle 'Guerre Sporche' in America Latina dove migliaia di persone svanirono. Dichiarò la sparizione forzata un'offesa alla dignità umana e una grave violazione dei diritti alla libertà, alla sicurezza e alla vita. Pose le basi per la convenzione vincolante del 2006." 
+              }, 
+              "parent": "A_RES_45_111" },
+            
+            { "id": "A_RES_48_104", "sigla": "Res. 48/104", "type": "main", "year": 1993, "y": 90, "class": "branch-women", 
+              "label": { en: "Violence against Women", it: "Violenza contro le Donne" },
+              "desc": { 
+                  en: "This was the first international instrument to explicitly address violence against women. It recognized that such violence is a violation of human rights and a public health crisis, not a 'private' domestic matter. It defined physical, sexual, and psychological violence occurring in the family or community, including battering, dowry-related violence, and marital rape.", 
+                  it: "Questo fu il primo strumento internazionale ad affrontare esplicitamente la violenza contro le donne. Riconobbe che tale violenza è una violazione dei diritti umani e una crisi di salute pubblica, non una questione domestica 'privata'. Definì la violenza fisica, sessuale e psicologica che avviene nella famiglia o nella comunità, incluse le percosse, la violenza legata alla dote e lo stupro coniugale." 
+              }, 
+              "related": ["CEDAW"], "parent": "CEDAW" },
+            
+            { "id": "A_CONF.157_23", "sigla": "Vienna", "type": "minor", "year": 1993, "y": 45, "class": "branch-civil", 
+              "label": { en: "Vienna Declaration", it: "Dichiarazione di Vienna" },
+              "desc": { 
+                  en: "Adopted at the World Conference on Human Rights following the Cold War. It famously stated: 'All human rights are **universal, indivisible, interdependent and interrelated**', trying to end the ideological split between civil/political and economic/social rights. It also recommended the creation of the post of High Commissioner for Human Rights to coordinate UN efforts.", 
+                  it: "Adottata alla Conferenza Mondiale sui Diritti Umani dopo la Guerra Fredda. Dichiarò notoriamente: 'Tutti i diritti umani sono **universali, indivisibili, interdipendenti e correlati**', cercando di porre fine alla divisione ideologica tra diritti civili/politici ed economici/sociali. Raccomandò inoltre la creazione della carica di Alto Commissario per i Diritti Umani per coordinare gli sforzi dell'ONU." 
+              }, 
+              "parent": "A_RES_47_133" },
+            
+            { "id": "node_52", "sigla": "DOC", "type": "main", "year": 1997, "y": -90, "class": "branch-social", 
+              "label": { en: "Declaration on Human Genome", it: "Dichiarazione Genoma Umano" },
+              "desc": { 
+                  en: "UNESCO Declaration. It addresses the human rights implications of genetics. It states that the human genome is the 'heritage of humanity'. It prohibits financial gain from the human genome and bans human cloning as contrary to human dignity. It aims to prevent genetic discrimination based on genetic characteristics.", 
+                  it: "Dichiarazione UNESCO. Affronta le implicazioni dei diritti umani nella genetica. Afferma che il genoma umano è 'patrimonio dell'umanità'. Vieta il guadagno finanziario dal genoma umano e bandisce la clonazione umana in quanto contraria alla dignità umana. Mira a prevenire la discriminazione genetica basata sulle caratteristiche genetiche." 
+              }, 
+              "parent": "CRC" },
+            
+            { "id": "A_RES_53_144", "sigla": "Res. 53/144", "type": "minor", "year": 1998, "y": 45, "class": "branch-civil", 
+              "label": { en: "Human Rights Defenders", it: "Difensori dei Diritti Umani" },
+              "desc": { 
+                  en: "Recognizes the right and responsibility of individuals, groups, and associations to promote and protect universally recognized human rights. It addresses the risks faced by activists (journalists, lawyers, NGO workers) and obliges States to ensure their protection against violence, retaliation, and arbitrary arrest.", 
+                  it: "Riconosce il diritto e la responsabilità di individui, gruppi e associazioni di promuovere e proteggere i diritti umani universalmente riconosciuti. Affronta i rischi affrontati dagli attivisti (giornalisti, avvocati, lavoratori delle ONG) e obbliga gli Stati a garantire la loro protezione contro violenza, ritorsioni e arresti arbitrari." 
+              }, 
+              "parent": "A_CONF.157_23" },
+
+            { "id": "OP-CEDAW", "sigla": "OP-CEDAW", "type": "minor", "year": 1999, "y": 45, "class": "branch-civil", 
+              "label": { en: "Optional Protocol CEDAW", it: "Protocollo Opzionale CEDAW" },
+              "desc": { 
+                  en: "A major step for enforcement. It establishes a communications procedure allowing individual women or groups to submit complaints of violations of the Convention directly to the CEDAW Committee. It also allows the Committee to initiate inquiries into grave or systematic violations.", 
+                  it: "Un passo importante per l'applicazione. Istituisce una procedura di comunicazione che consente a singole donne o gruppi di presentare reclami per violazioni della Convenzione direttamente al Comitato CEDAW. Consente inoltre al Comitato di avviare inchieste su violazioni gravi o sistematiche." 
+              }, 
+              "parent": "A_RES_53_144" },
+
+            { "id": "node_56", "sigla": "DOC", "type": "minor", "year": 2001, "y": 135, "class": "branch-coll", 
+              "label": { en: "Declaration on Cultural Diversity", it: "Dichiarazione Diversità Culturale" },
+              "desc": { 
+                  en: "UNESCO. Adopted in the wake of 9/11 to counter the 'clash of civilizations' narrative. It asserts that 'Cultural diversity is as necessary for humankind as biodiversity is for nature.' It framed the defense of cultural diversity as an ethical imperative, inseparable from respect for human dignity.", 
+                  it: "UNESCO. Adottata sulla scia dell'11 settembre per contrastare la narrazione dello 'scontro di civiltà'. Afferma che 'la diversità culturale è necessaria per l'umanità quanto la biodiversità lo è per la natura'. Ha inquadrato la difesa della diversità culturale come un imperativo etico, inseparabile dal rispetto della dignità umana." 
+              }, 
+              "parent": "A_RES_47_135" },
+
+            { "id": "node_17", "sigla": "OP-CAT", "type": "minor", "year": 2002, "y": 45, "class": "branch-civil", 
+              "label": { en: "Optional Protocol CAT", it: "Protocollo Opzionale CAT" },
+              "desc": { 
+                  en: "Created the Subcommittee on Prevention of Torture (SPT). Unlike other protocols based on reactive complaints, this establishes a system of regular **preventive visits** to places of detention (prisons, police stations, asylum centers) by international experts to identify risk factors for torture before it happens.", 
+                  it: "Ha creato il Sottocomitato per la Prevenzione della Tortura (SPT). A differenza di altri protocolli basati su reclami reattivi, questo stabilisce un sistema di regolari **visite preventive** ai luoghi di detenzione (carceri, stazioni di polizia, centri di asilo) da parte di esperti internazionali per identificare i fattori di rischio di tortura prima che accada." 
+              }, 
+              "parent": "OP-CEDAW" },
+
+            { "id": "OP-CRPD", "sigla": "OP-CRPD", "type": "minor", "year": 2006, "y": 45, "class": "branch-civil", 
+              "label": { en: "Optional Protocol CRPD", it: "Protocollo Opzionale CRPD" },
+              "desc": { 
+                  en: "Allows the Committee on the Rights of Persons with Disabilities to receive and consider communications from individuals claiming to be victims of violations of the Convention. It ensures that disability rights have the same enforcement mechanism as other major treaties.", 
+                  it: "Consente al Comitato sui Diritti delle Persone con Disabilità di ricevere e considerare comunicazioni da individui che affermano di essere vittime di violazioni della Convenzione. Garantisce che i diritti dei disabili abbiano lo stesso meccanismo di applicazione degli altri trattati principali." 
+              }, 
+              "parent": "node_17" },
+            
+            { "id": "CRPD", "sigla": "CRPD", "type": "main", "year": 2006, "y": -90, "class": "branch-social", 
+              "label": { en: "Convention on Persons with Disabilities", it: "Convenzione Disabilità" },
+              "desc": { 
+                  en: "The first comprehensive human rights treaty of the 21st century. It represents a shift from viewing persons with disabilities as objects of charity to **active subjects** with rights, capable of making decisions. Key innovations include the concept of 'Reasonable Accommodation' (failure to provide necessary adjustments is discrimination), 'Legal Capacity' (the right to make one's own legal decisions with support if needed), and Universal Design. It covers civil, political, economic, social, and cultural rights.", 
+                  it: "Il primo trattato completo sui diritti umani del XXI secolo. Rappresenta un passaggio dalla visione delle persone con disabilità come oggetti di carità a **soggetti attivi** con diritti, capaci di prendere decisioni. Le innovazioni chiave includono il concetto di 'Accomodamento Ragionevole' (il mancato adeguamento necessario è discriminazione), 'Capacità Legale' (il diritto di prendere le proprie decisioni legali con supporto se necessario) e Design Universale. Copre diritti civili, politici, economici, sociali e culturali." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-rights-persons-disabilities", "ratifications": 185, "related": ["node_34"], "parent": "node_52" },
+            
+            { "id": "CPED", "sigla": "CPED", "type": "main", "year": 2006, "y": 45, "class": "branch-civil", 
+              "label": { en: "Convention on Enforced Disappearance", it: "Convenzione Sparizioni Forzate" },
+              "desc": { 
+                  en: "Codified enforced disappearance as a crime against humanity when practiced in a widespread or systematic manner. It establishes the **Right to the Truth** for victims and their families regarding the circumstances of the disappearance and the fate of the disappeared person. It criminalizes secret detention and obliges states to hold a register of detainees.", 
+                  it: "Ha codificato la sparizione forzata come crimine contro l'umanità quando praticata in modo diffuso o sistematico. Stabilisce il **Diritto alla Verità** per le vittime e le loro famiglie riguardo alle circostanze della sparizione e al destino della persona scomparsa. Criminalizza la detenzione segreta e obbliga gli stati a tenere un registro dei detenuti." 
+              }, 
+              "link": "https://www.ohchr.org/en/instruments-mechanisms/instruments/international-convention-protection-all-persons-enforced", "ratifications": 72, "related": ["A_RES_47_133"], "parent": "OP-CRPD" },
+            
+            { "id": "UNDRIP", "sigla": "UNDRIP", "type": "main", "year": 2007, "y": 135, "class": "branch-coll", 
+              "label": { en: "Rights of Indigenous Peoples", it: "Diritti dei Popoli Indigeni" },
+              "desc": { 
+                  en: "Adopted after 20 years of intense negotiation. It establishes a universal framework of minimum standards for the survival, dignity, and well-being of the indigenous peoples. It recognizes collective rights to land, territories, and resources. A key and controversial concept is **Free, Prior and Informed Consent (FPIC)**, requiring states to meaningfully consult indigenous people before authorizing projects on their land.", 
+                  it: "Adottata dopo 20 anni di intensi negoziati. Stabilisce un quadro universale di standard minimi per la sopravvivenza, la dignità e il benessere dei popoli indigeni. Riconosce i diritti collettivi alla terra, ai territori e alle risorse. Un concetto chiave e controverso è il **Consenso Libero, Prioritario e Informato (FPIC)**, che richiede agli stati di consultare significativamente le popolazioni indigene prima di autorizzare progetti sulla loro terra." 
+              }, 
+              "related": ["node_2"], "parent": "node_56" },
+            
+            { "id": "node_22", "sigla": "OP-ICESCR", "type": "minor", "year": 2008, "y": -45, "class": "branch-econ", 
+              "label": { en: "Optional Protocol ICESCR", it: "Protocollo Opzionale ICESCR" },
+              "desc": { 
+                  en: "A historic achievement that finally put economic rights on par with civil rights. It allows individuals to file complaints for violations of rights like health, housing, or food. It proves that these rights are 'justiciable' (can be judged in court) and not just political aspirations, ending decades of debate about their legal nature.", 
+                  it: "Un risultato storico che ha finalmente messo i diritti economici alla pari con i diritti civili. Consente agli individui di presentare reclami per violazioni di diritti come salute, alloggio o cibo. Dimostra che questi diritti sono 'giustiziabili' (possono essere giudicati in tribunale) e non solo aspirazioni politiche, ponendo fine a decenni di dibattito sulla loro natura legale." 
+              }, 
+              "parent": "CMW" },
+
+            { "id": "A_RES_65_229", "sigla": "Bangkok", "type": "minor", "year": 2010, "y": 90, "class": "branch-women", 
+              "label": { en: "Bangkok Rules", it: "Regole di Bangkok" },
+              "desc": { 
+                  en: "United Nations Rules for the Treatment of Women Prisoners. It recognized that prisons, historically designed for men, do not meet the specific needs of women. It mandates gender-specific healthcare (reproductive health), humane treatment of pregnant women, and provisions for children accompanying their mothers in prison.", 
+                  it: "Regole delle Nazioni Unite per il Trattamento delle Donne Detenute. Ha riconosciuto che le carceri, storicamente progettate per gli uomini, non soddisfano le esigenze specifiche delle donne. Impone assistenza sanitaria specifica di genere (salute riproduttiva), trattamento umano delle donne incinte e disposizioni per i bambini che accompagnano le madri in prigione." 
+              }, 
+              "parent": "A_RES_48_104" },
+            
+            { "id": "node_23", "sigla": "UNGPs", "type": "main", "year": 2011, "y": -135, "class": "branch-env", 
+              "label": { en: "Guiding Principles on Business", it: "Principi Guida su Business" },
+              "desc": { 
+                  en: "Known as the 'Ruggie Principles'. It is the authoritative global standard for preventing and addressing the risk of adverse impacts on human rights linked to business activity. It rests on 3 Pillars: 1) The **State duty to Protect** human rights; 2) The **Corporate responsibility to Respect** human rights (due diligence); 3) Access to **Remedy** for victims. While soft law, it has influenced legislation worldwide.", 
+                  it: "Conosciuti come i 'Principi Ruggie'. È lo standard globale autorevole per prevenire e affrontare il rischio di impatti negativi sui diritti umani legati all'attività aziendale. Si basa su 3 Pilastri: 1) Il **Dovere dello Stato di Proteggere** i diritti umani; 2) La **Responsabilità delle Imprese di Rispettare** i diritti umani (due diligence); 3) L'Accesso al **Rimedio** per le vittime. Pur essendo soft law, ha influenzato la legislazione in tutto il mondo." 
+              }, 
+              "parent": "A_CONF.151_26" },
+            
+            { "id": "OP-CRC-IC", "sigla": "OP-CRC-IC", "type": "minor", "year": 2011, "y": 45, "class": "branch-civil", 
+              "label": { en: "Protocol CRC Communications", it: "Protocollo Comunicazioni CRC" },
+              "desc": { 
+                  en: "This protocol gave children the legal standing to complain directly to the UN Committee on the Rights of the Child about violations of their rights, if national systems fail to provide a remedy. It recognizes the child as a full bearer of rights with the capacity to act, not just a protected object.", 
+                  it: "Questo protocollo ha dato ai bambini la legittimazione legale per reclamare direttamente al Comitato ONU sui Diritti dell'Infanzia per violazioni dei loro diritti, se i sistemi nazionali non forniscono un rimedio. Riconosce il bambino come pieno titolare di diritti con capacità di agire, non solo un oggetto protetto." 
+              }, 
+              "parent": "CPED" },
+
+            { "id": "node_61", "sigla": "Res. 21/11", "type": "minor", "year": 2012, "y": -45, "class": "branch-econ", 
+              "label": { en: "Principles on Extreme Poverty", it: "Principi su Povertà Estrema" },
+              "desc": { 
+                  en: "Guiding Principles on Extreme Poverty and Human Rights. It defines poverty not just as a lack of income, but as a multidimensional violation of human dignity, agency, and human rights. It asserts that persons living in poverty are not passive recipients of charity but rights-holders who must be empowered to participate in decisions affecting them.", 
+                  it: "Principi Guida su Povertà Estrema e Diritti Umani. Definisce la povertà non solo come mancanza di reddito, ma come una violazione multidimensionale della dignità umana, dell'agency e dei diritti umani. Afferma che le persone che vivono in povertà non sono destinatari passivi di carità ma titolari di diritti che devono essere messi in condizione di partecipare alle decisioni che li riguardano." 
+              }, 
+              "parent": "node_22" },
+
+            { "id": "A_RES_70_175", "sigla": "Mandela", "type": "minor", "year": 2015, "y": 45, "class": "branch-civil", 
+              "label": { en: "Nelson Mandela Rules", it: "Regole Nelson Mandela" },
+              "desc": { 
+                  en: "A major revision of the 1955 Standard Minimum Rules for the Treatment of Prisoners. Named after Mandela to honor his 27 years of imprisonment. Major updates include: strict limits on solitary confinement (defined as torture if prolonged >15 days), independent inspections, better healthcare ethics, and disciplinary restrictions.", 
+                  it: "Una revisione importante delle Regole Minime Standard del 1955 per il Trattamento dei Prigionieri. Prende il nome da Mandela per onorare i suoi 27 anni di prigionia. Gli aggiornamenti principali includono: limiti rigorosi all'isolamento (definito come tortura se prolungato >15 giorni), ispezioni indipendenti, migliore etica sanitaria e restrizioni disciplinari." 
+              }, 
+              "parent": "OP-CRC-IC" },
+
+            { "id": "A_RES_73_165", "sigla": "Res. 73/165", "type": "minor", "year": 2018, "y": -45, "class": "branch-econ", 
+              "label": { en: "Rights of Peasants", it: "Diritti dei Contadini" },
+              "desc": { 
+                  en: "Declaration on the Rights of Peasants and Other People Working in Rural Areas. It protects the rights of small-scale farmers, fishers, and indigenous people to land, seeds, and food sovereignty. It is a response to the threats posed by agro-industry, land grabbing, and climate change, emphasizing the right to maintain traditional farming practices.", 
+                  it: "Dichiarazione sui Diritti dei Contadini e Altre Persone che Lavorano nelle Zone Rurali. Protegge i diritti dei piccoli agricoltori, pescatori e popolazioni indigene alla terra, alle sementi e alla sovranità alimentare. È una risposta alle minacce poste dall'agroindustria, dal land grabbing e dal cambiamento climatico, sottolineando il diritto di mantenere le pratiche agricole tradizionali." 
+              }, 
+              "parent": "node_61" },
+            
+            { "id": "A_RES_76_300", "sigla": "Res. 76/300", "type": "main", "year": 2022, "y": -135, "class": "branch-env", 
+              "label": { en: "Right to Clean Environment", it: "Diritto all'Ambiente Sano" },
+              "desc": { 
+                  en: "A historic General Assembly resolution declaring that the right to a clean, healthy, and sustainable environment is a universal human right. While not legally binding, it is a catalyst for constitutional changes worldwide and paves the way for 'climate justice' litigation against states and corporations. It recognizes that environmental degradation interferes with the enjoyment of all other human rights.", 
+                  it: "Una storica risoluzione dell'Assemblea Generale che dichiara che il diritto a un ambiente pulito, sano e sostenibile è un diritto umano universale. Sebbene non sia giuridicamente vincolante, è un catalizzatore per cambiamenti costituzionali in tutto il mondo e apre la strada a contenziosi per la 'giustizia climatica' contro stati e aziende. Riconosce che il degrado ambientale interferisce con il godimento di tutti gli altri diritti umani." 
+              }, 
+              "parent": "node_23" }
+        ];
 
         const history = [
-            { year: 1945, label: "End of WWII", details: "The end of World War II and the horrors of the Holocaust lead to the birth of the UN." },
-            { year: 1989, label: "Fall of Berlin Wall", details: "The fall of the Wall and the end of the Cold War unlock the ratification of many treaties." },
-            { year: 2001, label: "September 11", details: "The 'War on Terror' begins, posing new challenges to the balance between security and rights." },
-            { year: 2015, label: "Agenda 2030", details: "UN adopts SDGs: development, sustainability, and rights are indivisible." }
+            { year: 1945, 
+              label: { en: "End of WWII / UN Created", it: "Fine WWII / Creazione ONU" },
+              details: { 
+                  en: "The United Nations is established on the ashes of World War II and the Holocaust. The revelation of the death camps fundamentally changed international law: sovereignty could no longer justify the extermination of a population. The UN Charter was signed in San Francisco, introducing 'human rights' into the lexicon of international diplomacy, though initially without a clear definition to avoid immediate conflict among the victors.", 
+                  it: "Le Nazioni Unite vengono istituite sulle ceneri della Seconda Guerra Mondiale e dell'Olocausto. La rivelazione dei campi di sterminio ha cambiato radicalmente il diritto internazionale: la sovranità non poteva più giustificare lo sterminio di una popolazione. La Carta dell'ONU fu firmata a San Francisco, introducendo i 'diritti umani' nel lessico della diplomazia internazionale, sebbene inizialmente senza una chiara definizione per evitare conflitti immediati tra i vincitori." 
+              } },
+            { year: 1950, 
+              label: { en: "Korean War", it: "Guerra di Corea" },
+              details: { 
+                  en: "The first major armed conflict of the Cold War. The UN Security Council authorized military intervention (only because the USSR was boycotting the vote). It solidified the global division between the Western bloc and the Communist bloc, which would paralyze human rights negotiations for decades, splitting the concept of rights into two opposing camps.", 
+                  it: "Il primo grande conflitto armato della Guerra Fredda. Il Consiglio di Sicurezza dell'ONU autorizzò l'intervento militare (solo perché l'URSS stava boicottando il voto). Solidificò la divisione globale tra il blocco occidentale e il blocco comunista, che avrebbe paralizzato i negoziati sui diritti umani per decenni, dividendo il concetto di diritti in due campi opposti." 
+              } },
+            { year: 1956, 
+              label: { en: "Hungarian Revolution", it: "Rivoluzione Ungherese" },
+              details: { 
+                  en: "A nationwide revolution against the government of the Hungarian People's Republic and its Soviet-imposed policies. Soviet tanks crushed the uprising. The lack of Western intervention showed that 'spheres of influence' were more important than human rights behind the Iron Curtain, demonstrating the limits of UN power.", 
+                  it: "Una rivoluzione nazionale contro il governo della Repubblica Popolare Ungherese e le sue politiche imposte dai sovietici. I carri armati sovietici schiacciarono la rivolta. La mancanza di intervento occidentale mostrò che le 'sfere di influenza' erano più importanti dei diritti umani dietro la Cortina di Ferro, dimostrando i limiti del potere dell'ONU." 
+              } },
+            { year: 1962, 
+              label: { en: "Cuban Missile Crisis", it: "Crisi dei Missili Cuba" },
+              details: { 
+                  en: "The closest the world came to nuclear war. It highlighted that the 'Right to Life' was fragile in the atomic age. It led to a period of détente and the realization that some level of cooperation was necessary for survival, influencing later disarmament treaties.", 
+                  it: "Il momento in cui il mondo si avvicinò di più alla guerra nucleare. Evidenziò che il 'Diritto alla Vita' era fragile nell'era atomica. Portò a un periodo di distensione e alla consapevolezza che un certo livello di cooperazione era necessario per la sopravvivenza, influenzando i successivi trattati sul disarmo." 
+              } },
+            { year: 1968, 
+              label: { en: "Prague Spring / 68 Protests", it: "Primavera Praga / Proteste 68" },
+              details: { 
+                  en: "Soviet invasion of Czechoslovakia ended the 'socialism with a human face' experiment. Simultaneously, 1968 saw global protests (Paris, Mexico City, USA) demanding civil rights, anti-war policies, and women's rights, marking a cultural revolution that redefined rights from the bottom up.", 
+                  it: "L'invasione sovietica della Cecoslovacchia pose fine all'esperimento del 'socialismo dal volto umano'. Contemporaneamente, il 1968 vide proteste globali (Parigi, Città del Messico, USA) che chiedevano diritti civili, politiche anti-guerra e diritti delle donne, segnando una rivoluzione culturale che ridefinì i diritti dal basso." 
+              } },
+            { year: 1975, 
+              label: { en: "End of Vietnam War", it: "Fine Guerra Vietnam" },
+              details: { 
+                  en: "The fall of Saigon ended the Vietnam War. The conflict had sparked a massive global anti-war movement and brought issues of war crimes (My Lai massacre) and the use of chemical weapons (Agent Orange) to the forefront of public consciousness.", 
+                  it: "La caduta di Saigon pose fine alla guerra del Vietnam. Il conflitto aveva scatenato un massiccio movimento globale contro la guerra e portato alla ribalta della coscienza pubblica questioni di crimini di guerra (massacro di My Lai) e l'uso di armi chimiche (Agente Arancio)." 
+              } },
+            { year: 1985, 
+              label: { en: "USSR Reforms", it: "Riforme URSS" },
+              details: { 
+                  en: "Mikhail Gorbachev initiates *Perestroika* (restructuring) and *Glasnost* (openness). These reforms loosened censorship and political repression, signaling the beginning of the end for the Soviet Union and its control over Eastern Europe.", 
+                  it: "Mikhail Gorbachev avvia la *Perestroika* (ristrutturazione) e la *Glasnost* (trasparenza). Queste riforme allentarono la censura e la repressione politica, segnando l'inizio della fine per l'Unione Sovietica e il suo controllo sull'Europa orientale." 
+              } },
+            { year: 1989, 
+              label: { en: "Fall of Berlin Wall", it: "Caduta Muro di Berlino" },
+              details: { 
+                  en: "The symbolic end of the Cold War. The collapse of communist regimes in Eastern Europe unlocked the international human rights system. Many treaties that had been stalled by bloc politics were rapidly ratified, and the debate shifted from 'East vs West' to 'North vs South'.", 
+                  it: "La fine simbolica della Guerra Fredda. Il crollo dei regimi comunisti nell'Europa orientale sbloccò il sistema internazionale dei diritti umani. Molti trattati che erano stati bloccati dalla politica dei blocchi furono rapidamente ratificati e il dibattito si spostò da 'Est contro Ovest' a 'Nord contro Sud'." 
+              } },
+            { year: 1993, 
+              label: { en: "ICTY Established", it: "Istituzione ICTY" },
+              details: { 
+                  en: "The UN Security Council created the International Criminal Tribunal for the former Yugoslavia (ICTY) to prosecute genocide and war crimes. It was the first international war crimes court since Nuremberg and Tokyo, re-establishing the principle of individual criminal responsibility.", 
+                  it: "Il Consiglio di Sicurezza dell'ONU creò il Tribunale Penale Internazionale per l'ex Jugoslavia (ICTY) per perseguire il genocidio e i crimini di guerra. Fu il primo tribunale internazionale per crimini di guerra dai tempi di Norimberga e Tokyo, ristabilendo il principio della responsabilità penale individuale." 
+              } },
+            { year: 1994, 
+              label: { en: "Rwanda Genocide", it: "Genocidio Ruanda" },
+              details: { 
+                  en: "Over 800,000 people were killed in 100 days while the international community failed to intervene. In response, the UN created the International Criminal Tribunal for Rwanda (ICTR), which later issued the first-ever conviction for genocide by an international court, defining rape as a tool of genocide.", 
+                  it: "Oltre 800.000 persone furono uccise in 100 giorni mentre la comunità internazionale non riusciva a intervenire. In risposta, l'ONU creò il Tribunale Penale Internazionale per il Ruanda (ICTR), che in seguito emise la prima condanna in assoluto per genocidio da parte di un tribunale internazionale, definendo lo stupro come strumento di genocidio." 
+              } },
+            { year: 2001, 
+              label: { en: "September 11", it: "11 Settembre" },
+              details: { 
+                  en: "The terrorist attacks in the USA triggered the 'War on Terror'. This era posed new challenges to human rights, characterized by the use of 'enhanced interrogation techniques' (torture), extraordinary rendition, and indefinite detention at Guantanamo Bay, testing the absolute ban on torture.", 
+                  it: "Gli attacchi terroristici negli USA scatenarono la 'Guerra al Terrore'. Quest'epoca pose nuove sfide ai diritti umani, caratterizzata dall'uso di 'tecniche di interrogatorio potenziate' (tortura), consegne straordinarie e detenzione indefinita a Guantanamo Bay, mettendo alla prova il divieto assoluto di tortura." 
+              } },
+            { year: 2006, 
+              label: { en: "HRC Created", it: "Creazione HRC" },
+              details: { 
+                  en: "The **Human Rights Council** was established (Res 60/251) to replace the discredited Commission on Human Rights. A key innovation was the **Universal Periodic Review (UPR)**, a mechanism where the human rights record of *every* UN member state is peer-reviewed every 4.5 years, ensuring no state is exempt.", 
+                  it: "Il **Consiglio per i Diritti Umani** fu istituito (Res 60/251) per sostituire la screditata Commissione per i Diritti Umani. Un'innovazione chiave fu la **Revisione Periodica Universale (UPR)**, un meccanismo in cui il record dei diritti umani di *ogni* stato membro dell'ONU viene sottoposto a revisione paritaria ogni 4,5 anni, garantendo che nessuno stato sia esente." 
+              } },
+            { year: 2015, 
+              label: { en: "Agenda 2030", it: "Agenda 2030" },
+              details: { 
+                  en: "The UN adopted the Sustainable Development Goals (SDGs). The Agenda pledges to 'Leave no one behind'. It explicitly links sustainable development with human rights, acknowledging that you cannot have development without rights, nor rights without development.", 
+                  it: "L'ONU adottò gli Obiettivi di Sviluppo Sostenibile (SDG). L'Agenda si impegna a 'Non lasciare indietro nessuno'. Collega esplicitamente lo sviluppo sostenibile ai diritti umani, riconoscendo che non si può avere sviluppo senza diritti, né diritti senza sviluppo." 
+              } }
         ];
+
+        const eras = [
+            { name: {en: "Decolonization", it: "Decolonizzazione"}, start: 1945, end: 1975, color: "rgba(255, 165, 0, 0.15)", cssColor: "#FFA500", 
+              desc: {
+                  en: "A period of rapid dismantling of colonial empires, leading to independence for dozens of nations in Africa and Asia. This shifted the balance of power in the UN General Assembly. The 'Right to Self-Determination' became the prerequisite for all other human rights.", 
+                  it: "Un periodo di rapido smantellamento degli imperi coloniali, che portò all'indipendenza di decine di nazioni in Africa e Asia. Ciò spostò l'equilibrio di potere nell'Assemblea Generale dell'ONU. Il 'Diritto all'Autodeterminazione' divenne il prerequisito per tutti gli altri diritti umani."
+              } },
+            { name: {en: "Cold War", it: "Guerra Fredda"}, start: 1947, end: 1991, color: "rgba(0, 0, 255, 0.1)", cssColor: "#3182ce", 
+              desc: {
+                  en: "Geopolitical tension between the Soviet Union and the United States. Human rights became a battlefield: The West championed Civil/Political rights (liberty), while the East championed Economic/Social rights (equality). This ideological split resulted in two separate Covenants (ICCPR & ICESCR).", 
+                  it: "Tensione geopolitica tra l'Unione Sovietica e gli Stati Uniti. I diritti umani divennero un campo di battaglia: l'Occidente difendeva i diritti civili/politici (libertà), mentre l'Est difendeva i diritti economici/sociali (uguaglianza). Questa divisione ideologica portò a due Patti separati (ICCPR & ICESCR)."
+              } },
+            { name: {en: "US Unipolar", it: "Unipolarismo USA"}, start: 1991, end: 2001, color: "rgba(128, 0, 128, 0.1)", cssColor: "#805ad5", 
+              desc: {
+                  en: "The post-Cold War era characterized by US dominance. It saw the expansion of liberal democracy and a rapid development of international criminal justice (ICTY, ICTR, ICC). However, it also saw failures to prevent genocide (Rwanda, Srebrenica).", 
+                  it: "L'era post-Guerra Fredda caratterizzata dal dominio degli USA. Vide l'espansione della democrazia liberale e un rapido sviluppo della giustizia penale internazionale (ICTY, ICTR, CPI). Tuttavia, vide anche fallimenti nel prevenire il genocidio (Ruanda, Srebrenica)."
+              } },
+            { name: {en: "War on Terror", it: "Guerra al Terrore"}, start: 2001, end: 2025, color: "rgba(50, 50, 50, 0.1)", cssColor: "#4a5568", 
+              desc: {
+                  en: "Global military campaign following 9/11. Characterized by a tension between national security and individual liberties. Issues include mass surveillance, the use of drones, and the definition of 'unlawful combatants'. It significantly strained international humanitarian law.", 
+                  it: "Campagna militare globale dopo l'11 settembre. Caratterizzata da una tensione tra sicurezza nazionale e libertà individuali. Le questioni includono sorveglianza di massa, uso di droni e definizione di 'combattenti illegali'. Ha messo a dura prova il diritto internazionale umanitario."
+              } }
+        ];
+
+        // --- HELPER FUNCTIONS ---
+
+        function getTrans(obj) {
+            if (obj && obj[currentLang]) return obj[currentLang];
+            return obj['en'] || obj; // Fallback
+        }
+
+        // --- NEW TEXT PARSER ---
+        function parseText(text) {
+            if(!text) return "";
+            // Replace **bold** with <b>bold</b>
+            let parsed = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            // Replace *italic* with <i>italic</i>
+            parsed = parsed.replace(/\*(.*?)\*/g, '<i>$1</i>');
+            return parsed;
+        }
+
+        function updateStaticText() {
+            document.getElementById('main-title').innerText = dict[currentLang].title;
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const k = el.getAttribute('data-key');
+                if(dict[currentLang][k]) el.innerText = dict[currentLang][k];
+            });
+            const instrContainer = document.getElementById('legend-instr-content');
+            instrContainer.innerHTML = '';
+            dict[currentLang].instr.forEach(txt => {
+                const span = document.createElement('span');
+                span.innerHTML = txt;
+                instrContainer.appendChild(span);
+            });
+            document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'EN' : 'IT';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'it' : 'en';
+            updateStaticText();
+            // Clear chart and redraw
+            container.innerHTML = '<svg id="lines"></svg>'; // Reset content
+            // Need to re-fetch reference to svg
+            svg = document.getElementById('lines');
+            activeLeafId = null;
+            draw();
+        }
+
+        // --- MOCK COUNTRY LIST ---
+        function getRatifyingCountries(count) {
+            const allCountries = ["Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Ecuador","Egypt","El Salvador","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Macedonia","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Samoa","San Marino","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","UAE","UK","USA","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+            const list = allCountries.slice(0, count);
+            let html = "<ul>";
+            list.forEach(c => html += `<li>${c}</li>`);
+            html += "</ul>";
+            return html;
+        }
 
         const container = document.getElementById('chart-container');
         const viewport = document.getElementById('viewport');
-        const svg = document.getElementById('lines');
+        let svg = document.getElementById('lines'); // Make mutable for redraw
         
+        let activeLeafId = null;
+        let currentZoom = 1;
         const CFG = {
             startYear: 1940,
             pxPerYear: 65,
             centerY: 350,
-            wMain: 70,
-            hMain: 34,
-            sizeMinor: 14,
-            yScale: 1.6 
+            wMain: 70, hMain: 34, sizeMinor: 14, yScale: 1.6 
         };
+
+        function changeZoom(delta) {
+            currentZoom += delta;
+            if(currentZoom < 0.5) currentZoom = 0.5;
+            if(currentZoom > 2.0) currentZoom = 2.0;
+            container.style.transform = `scale(${currentZoom})`;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function drawCrossReference(startId, targetId, isPersistent = false) {
+            const startNode = document.querySelector(`.node[data-id="${startId}"]`);
+            const endNode = document.querySelector(`.node[data-id="${targetId}"]`);
+            
+            if(!startNode || !endNode) return;
+
+            const x1 = parseFloat(startNode.style.left) + (startNode.classList.contains('type-main') ? 35 : 7);
+            const y1 = parseFloat(startNode.style.top) + (startNode.classList.contains('type-main') ? 17 : 7);
+            const x2 = parseFloat(endNode.style.left) + (endNode.classList.contains('type-main') ? 35 : 7);
+            const y2 = parseFloat(endNode.style.top) + (endNode.classList.contains('type-main') ? 17 : 7);
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const mx = (x1 + x2) / 2;
+            const my = (y1 + y2) / 2 - 50; 
+            path.setAttribute("d", `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
+            path.setAttribute("stroke", "#718096");
+            path.setAttribute("stroke-width", "2");
+            path.setAttribute("fill", "none");
+            
+            path.setAttribute("class", isPersistent ? "cross-ref-line perm-ref" : "cross-ref-line temp-ref");
+            svg.appendChild(path);
+        }
+
+        function removeCrossReferences() {
+            document.querySelectorAll('.temp-ref').forEach(el => el.remove());
+        }
 
         function getSubtype(label) {
             const l = label.toLowerCase();
-            if (l.includes("convention") || l.includes("covenant") || l.includes("charter")) return "subtype-conv";
-            if (l.includes("declaration")) return "subtype-decl";
+            if (l.includes("convention") || l.includes("covenant") || l.includes("charter") || l.includes("convenzione") || l.includes("patto") || l.includes("carta")) return "subtype-conv";
+            if (l.includes("declaration") || l.includes("dichiarazione")) return "subtype-decl";
             return "subtype-other";
         }
 
+        function createPath(d, color, targetId) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", d);
+            path.setAttribute("stroke", color); path.setAttribute("fill", "none");
+            path.setAttribute("stroke-width", "1.5"); path.setAttribute("opacity", "0.7");
+            path.setAttribute("data-target-id", targetId);
+            svg.appendChild(path);
+        }
+
+        function highlightPath(nodeId) {
+            if (activeLeafId === nodeId) { resetHighlight(); return; }
+            activeLeafId = nodeId;
+            const pathIds = new Set();
+            let curr = data.find(d => d.id === nodeId);
+            while(curr) { pathIds.add(curr.id); curr = data.find(d => d.id === curr.parent); }
+            document.querySelectorAll('.node').forEach(el => {
+                if (pathIds.has(el.dataset.id)) { el.classList.remove('dimmed'); } 
+                else { 
+                    el.classList.add('dimmed'); 
+                    el.classList.remove('expanded'); 
+                    el.style.transform = ''; 
+                }
+            });
+            document.querySelectorAll('svg path').forEach(el => {
+                if(el.classList.contains('cross-ref-line')) return; 
+                const tid = el.getAttribute('data-target-id');
+                if (pathIds.has(tid)) { el.classList.remove('dimmed'); el.classList.add('highlighted-path'); } 
+                else { el.classList.add('dimmed'); el.classList.remove('highlighted-path'); }
+            });
+            document.querySelectorAll('.bg-event-label, .bg-event-line').forEach(el => el.classList.add('dimmed'));
+        }
+
+        function resetHighlight() {
+            activeLeafId = null;
+            document.querySelectorAll('.dimmed').forEach(el => el.classList.remove('dimmed'));
+            document.querySelectorAll('.highlighted-path').forEach(el => el.classList.remove('highlighted-path'));
+            document.querySelectorAll('.node.expanded').forEach(el => {
+                el.classList.remove('expanded');
+                el.style.transform = ''; 
+            });
+            document.querySelectorAll('.perm-ref').forEach(el => el.remove()); 
+            removeCrossReferences();
+        }
+
+        function drawEras() {
+            const boundaries = new Set([CFG.startYear]);
+            eras.forEach(e => { if(e.start >= CFG.startYear) boundaries.add(e.start); if(e.end >= CFG.startYear) boundaries.add(e.end); });
+            const sortedBounds = Array.from(boundaries).sort((a,b) => a - b);
+            for (let i = 0; i < sortedBounds.length - 1; i++) {
+                const startY = sortedBounds[i]; const endY = sortedBounds[i+1];
+                const activeEras = eras.filter(e => e.start < endY && e.end > startY);
+                if (activeEras.length > 0) {
+                    const x = (startY - CFG.startYear) * CFG.pxPerYear;
+                    const width = (endY - startY) * CFG.pxPerYear;
+                    const block = document.createElement('div');
+                    block.className = 'era-block'; block.style.left = x + 'px'; block.style.width = width + 'px';
+                    if (activeEras.length === 1) { block.style.backgroundColor = activeEras[0].color; } 
+                    else {
+                        const c1 = activeEras[0].cssColor + '20'; const c2 = activeEras[1].cssColor + '20';
+                        block.style.background = `repeating-linear-gradient(-45deg, ${c1}, ${c1} 10px, ${c2} 10px, ${c2} 20px)`;
+                    }
+                    
+                    activeEras.forEach((era, idx) => {
+                        const label = document.createElement('div'); 
+                        label.className = 'era-label-bg'; 
+                        label.innerText = getTrans(era.name);
+                        if(activeEras.length > 1) {
+                            if(idx % 2 === 0) label.classList.add('era-pos-top');
+                            else label.classList.add('era-pos-bot');
+                        }
+                        block.appendChild(label);
+                    });
+
+                    block.addEventListener('click', (e) => {
+                        const expandedNode = document.querySelector('.node.expanded');
+                        const isPathActive = activeLeafId !== null;
+                        const isPopoverOpen = document.querySelector('.hist-popover.active');
+                        if (expandedNode || isPathActive || isPopoverOpen) return; 
+                        e.stopPropagation();
+                        document.querySelectorAll('.hist-popover.active').forEach(p => p.classList.remove('active'));
+                        const popover = document.createElement('div');
+                        popover.className = 'hist-popover active';
+                        popover.style.left = (e.pageX - container.getBoundingClientRect().left + 10) + 'px'; popover.style.top = '100px'; 
+                        let content = `<div class="close-btn" onclick="this.parentElement.remove(); event.stopPropagation();">×</div>`;
+                        content += `<h4>${dict[currentLang].hist_ctx} (${startY} - ${endY})</h4>`;
+                        activeEras.forEach(era => { content += `<div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;"><strong style="color:${era.cssColor}; font-size:14px;">${getTrans(era.name)}</strong><br><p style="margin-top:5px;">${parseText(getTrans(era.desc))}</p></div>`; });
+                        popover.innerHTML = content; container.appendChild(popover);
+                    });
+                    container.insertBefore(block, svg);
+                }
+            }
+        }
+
         function draw() {
-            // Check occupied years to skip standard axis lines
             const mainNodeYears = new Set(data.filter(d => d.type === 'main').map(d => d.year));
-
-            // 1. Axes
+            drawEras();
             for (let y = 1940; y <= 2030; y += 5) {
-                if (mainNodeYears.has(y)) continue; // Skip if a main node exists
-
+                if (mainNodeYears.has(y)) continue; 
                 const x = (y - CFG.startYear) * CFG.pxPerYear;
                 const lT = document.createElement('div'); lT.className = 'axis-label axis-top'; lT.style.left = x+'px'; lT.innerText = y; container.appendChild(lT);
                 const lB = document.createElement('div'); lB.className = 'axis-label axis-bot'; lB.style.left = x+'px'; lB.innerText = y; container.appendChild(lB);
             }
-
-            // 2. History Events
             history.forEach(evt => {
                 const x = (evt.year - CFG.startYear) * CFG.pxPerYear;
                 const line = document.createElement('div'); line.className = 'bg-event-line'; line.style.left = x+'px';
-                
-                const label = document.createElement('div'); label.className = 'bg-event-label';
-                label.style.left = x+'px'; label.innerText = evt.label;
-
-                const popover = document.createElement('div'); popover.className = 'hist-popover';
-                popover.style.left = (x + 10) + 'px'; 
-                popover.innerHTML = `<h4>${evt.label} (${evt.year})</h4><p>${evt.details}</p>`;
-
-                label.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    closeAll();
-                    if (!popover.classList.contains('active')) popover.classList.add('active');
-                });
-
+                const label = document.createElement('div'); label.className = 'bg-event-label'; label.style.left = x+'px'; label.innerText = getTrans(evt.label);
+                const popover = document.createElement('div'); popover.className = 'hist-popover'; popover.style.left = (x + 10) + 'px'; 
+                popover.innerHTML = `<div class="close-btn" onclick="this.parentElement.classList.remove('active'); event.stopPropagation();">×</div><h4>${getTrans(evt.label)} (${evt.year})</h4><p>${parseText(getTrans(evt.details))}</p>`;
+                label.addEventListener('click', function(e) { e.stopPropagation(); document.querySelectorAll('.hist-popover.active').forEach(p => p.classList.remove('active')); popover.classList.add('active'); });
                 container.appendChild(line); container.appendChild(label); container.appendChild(popover);
             });
 
-            // 3. Nodes, Guidelines, Connections
             data.forEach(item => {
                 const x = (item.year - CFG.startYear) * CFG.pxPerYear;
                 const y = CFG.centerY - (item.y * CFG.yScale);
                 const color = colorMap[item.class];
                 const isMinor = item.type === 'minor';
-                const subtypeClass = isMinor ? '' : getSubtype(item.label);
+                const labelText = getTrans(item.label);
+                // Apply Parser here
+                const descText = parseText(getTrans(item.desc));
+                const subtypeClass = isMinor ? '' : getSubtype(labelText);
 
-                // Dashed Guideline (Grey) with TOP and BOTTOM labels
                 if (!isMinor) {
-                    const guideLine = document.createElement('div');
-                    guideLine.className = 'year-guideline';
-                    guideLine.style.left = (x + CFG.wMain/2) + 'px'; 
-                    
-                    // Bottom Label
-                    const guideLabelBot = document.createElement('div');
-                    guideLabelBot.className = 'year-guideline-label bot';
-                    guideLabelBot.innerText = item.year;
-                    guideLine.appendChild(guideLabelBot);
-
-                    // Top Label
-                    const guideLabelTop = document.createElement('div');
-                    guideLabelTop.className = 'year-guideline-label top';
-                    guideLabelTop.innerText = item.year;
-                    guideLine.appendChild(guideLabelTop);
-
+                    const guideLine = document.createElement('div'); guideLine.className = 'year-guideline'; guideLine.style.left = (x + CFG.wMain/2) + 'px'; 
+                    const guideLabelBot = document.createElement('div'); guideLabelBot.className = 'year-guideline-label bot'; guideLabelBot.innerText = item.year; guideLine.appendChild(guideLabelBot);
+                    const guideLabelTop = document.createElement('div'); guideLabelTop.className = 'year-guideline-label top'; guideLabelTop.innerText = item.year; guideLine.appendChild(guideLabelTop);
                     container.appendChild(guideLine);
                 }
 
                 const div = document.createElement('div');
                 div.className = `node ${isMinor ? 'type-minor' : 'type-main'} ${item.class} ${subtypeClass}`;
-                div.style.left = x + 'px';
-                
+                div.style.left = x + 'px'; div.dataset.id = item.id;
                 const height = isMinor ? CFG.sizeMinor : CFG.hMain;
                 div.style.top = (y - (height / 2)) + 'px';
-                
-                if(isMinor) { div.style.borderColor = color; } 
-                else { div.style.borderLeftColor = color; }
+                if(isMinor) { div.style.borderColor = color; } else { div.style.borderLeftColor = color; }
 
-                div.innerHTML = `
+                let contentHTML = `
                     <div class="sigla">${item.sigla || ''}</div>
                     <div class="extended-content">
-                        <div class="info-line">${isMinor ? 'Step' : item.sigla} | ${item.year}</div>
-                        <h3>${item.label}</h3>
-                        <div class="description">${item.desc}</div>
-                    </div>
+                        <div class="close-btn" onclick="this.parentElement.parentElement.classList.remove('expanded'); this.parentElement.parentElement.style.transform = ''; event.stopPropagation();">×</div>
+                        <div class="info-line">${isMinor ? dict[currentLang].step_label : item.sigla} | ${item.year}</div>
+                        <h3>${labelText}</h3>
+                        <div class="description">${descText}</div>
                 `;
 
-                if (isMinor) {
-                    div.addEventListener('click', function(e) {
-                        e.stopPropagation(); 
-                        closeAll();
-                        this.classList.toggle('expanded');
-                    });
+                if(item.ratifications) {
+                    const pct = (item.ratifications / 193) * 100;
+                    let barColor = 'var(--status-high)';
+                    if(item.ratifications < 100) barColor = 'var(--status-low)';
+                    else if(item.ratifications < 160) barColor = 'var(--status-mid)';
+
+                    contentHTML += `
+                        <div class="ratification-container">
+                            <strong>${dict[currentLang].rat_label}</strong> ${item.ratifications} / 193 ${dict[currentLang].rat_states}
+                            <div class="progress-track"><div class="progress-fill" style="width:${pct}%; background:${barColor}"></div></div>
+                            <details>
+                                <summary>${dict[currentLang].view_countries}</summary>
+                                <div class="country-list-box">${getRatifyingCountries(item.ratifications)}</div>
+                            </details>
+                        </div>
+                    `;
                 }
+
+                if(item.link) { contentHTML += `<a href="${item.link}" target="_blank" class="doc-link-btn">${dict[currentLang].read_text}</a>`; }
+                contentHTML += `</div>`; 
+                div.innerHTML = contentHTML;
+
+                div.addEventListener('click', function(e) {
+                    e.stopPropagation(); 
+                    document.querySelectorAll('.hist-popover.active').forEach(p => p.classList.remove('active')); 
+                    highlightPath(item.id);
+                    
+                    document.querySelectorAll('.node.expanded').forEach(n => {
+                        if(n !== this) {
+                            n.classList.remove('expanded');
+                            n.style.transform = ''; 
+                        }
+                    });
+                    
+                    this.classList.toggle('expanded');
+
+                    if(this.classList.contains('expanded')) {
+                        if (item.y < -30) {
+                            this.style.transformOrigin = 'center bottom';
+                            this.style.transform = 'translateY(calc(-100% + 40px))';
+                        } else {
+                            this.style.transformOrigin = 'center top';
+                            this.style.transform = 'translateY(-10px)'; 
+                        }
+                    } else {
+                        this.style.transform = '';
+                    }
+
+                    document.querySelectorAll('.perm-ref').forEach(el => el.remove()); 
+                    if(this.classList.contains('expanded') && item.related) {
+                        item.related.forEach(targetId => drawCrossReference(item.id, targetId, true));
+                    }
+                });
+
+                div.addEventListener('mouseenter', function() {
+                    if(!this.classList.contains('expanded') && item.related) { 
+                        item.related.forEach(targetId => drawCrossReference(item.id, targetId, false)); 
+                    }
+                });
+                div.addEventListener('mouseleave', function() { removeCrossReferences(); });
+
                 container.appendChild(div);
 
                 if (item.parent) {
                     const parent = data.find(d => d.id === item.parent);
                     if (parent) {
-                        const px = (parent.year - CFG.startYear) * CFG.pxPerYear;
-                        const py = CFG.centerY - (parent.y * CFG.yScale); 
+                        const px = (parent.year - CFG.startYear) * CFG.pxPerYear; const py = CFG.centerY - (parent.y * CFG.yScale); 
                         const startOffset = parent.type === 'minor' ? CFG.sizeMinor : CFG.wMain;
-                        const xStart = px + startOffset; const yStart = py;
-                        const xEnd = x; const yEnd = y;
-                        const xMid = xStart + (xEnd - xStart) / 2;
-
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        path.setAttribute("d", `M ${xStart} ${yStart} L ${xMid} ${yStart} L ${xMid} ${yEnd} L ${xEnd} ${yEnd}`);
-                        path.setAttribute("stroke", color); path.setAttribute("fill", "none");
-                        path.setAttribute("stroke-width", "1.5"); path.setAttribute("opacity", "0.7");
-                        svg.appendChild(path);
+                        const xStart = px + startOffset; const yStart = py; const xEnd = x; const yEnd = y;
+                        if (item.class === parent.class) {
+                            const xMid = xStart + (xEnd - xStart) / 2; createPath(`M ${xStart} ${yStart} L ${xMid} ${yStart} L ${xMid} ${yEnd} L ${xEnd} ${yEnd}`, color, item.id);
+                        } else {
+                            const elbowSpace = 25; let xMid = xEnd - elbowSpace; if (xMid < xStart) xMid = xStart + 10; 
+                            const parentColor = colorMap[parent.class];
+                            createPath(`M ${xStart} ${yStart} L ${xMid} ${yStart}`, parentColor, item.id); createPath(`M ${xMid} ${yStart} L ${xMid} ${yEnd} L ${xEnd} ${yEnd}`, color, item.id);
+                        }
                     }
                 }
             });
         }
 
-        function closeAll() {
+        document.getElementById('viewport').addEventListener('click', function() {
+            resetHighlight();
             document.querySelectorAll('.hist-popover.active').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.node.type-minor.expanded').forEach(el => el.classList.remove('expanded'));
-        }
-
-        document.addEventListener('click', closeAll);
-
-        viewport.addEventListener('wheel', (evt) => {
-            evt.preventDefault();
-            viewport.scrollLeft += evt.deltaY;
         });
 
+        viewport.addEventListener('wheel', (evt) => {
+            if(evt.target.closest('.country-list-box')) return;
+            if (evt.ctrlKey) { evt.preventDefault(); changeZoom(evt.deltaY > 0 ? -0.1 : 0.1); } 
+            else { evt.preventDefault(); viewport.scrollLeft += evt.deltaY; }
+        });
+
+        // Initialize with default language
+        updateStaticText();
         draw();
     </script>
 </body>
