@@ -601,6 +601,80 @@
             font-style: italic;
             line-height: 1.5;
         }
+    /* --- STILE PAGINA DOCUMENTAZIONE --- */
+.doc-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    line-height: 1.8;
+}
+
+.doc-section {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 15px var(--shadow);
+    margin-bottom: 30px;
+}
+
+.doc-section h2 {
+    color: var(--c-social);
+    border-bottom: 1px solid var(--grid-color);
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+.doc-section p {
+    color: var(--text-color);
+    font-size: 1.05rem;
+}
+
+.download-box {
+    text-align: center;
+    margin-top: 50px;
+    padding: 40px;
+    background: rgba(49, 130, 206, 0.1);
+    border-radius: 8px;
+    border: 2px dashed var(--c-social);
+}
+
+.download-btn {
+    background-color: var(--c-social);
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s;
+}
+
+.download-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+/* --- FIX SCROLL PER PAGINA DOCUMENTAZIONE --- */
+#docs-page {
+    /* Fondamentale: sovrascrive il blocco ereditato e abilita lo scroll */
+    overflow-y: auto !important; 
+    
+    /* Definisce l'area scrollabile (Altezza schermo - Navbar) */
+    height: calc(100vh - 50px); 
+    
+    /* Aggiunge lo sfondo sfumato (uguale a Intro/Stats) */
+    background: linear-gradient(180deg, #ebf8ff 0%, #bee3f8 100%); 
+}
+
+/* Fix per la Dark Mode nella pagina Docs */
+body.dark-mode #docs-page {
+    background: linear-gradient(180deg, #1a202c 0%, #2b6cb0 100%);
+    color: #f7fafc;
+}
     </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -617,7 +691,7 @@
             <div class="nav-item active" onclick="switchPage('intro')" id="nav-intro">Introduction</div>
             <div class="nav-item" onclick="switchPage('timeline')" id="nav-timeline">Timeline</div>
             <div class="nav-item" onclick="switchPage('stats')" id="nav-stats">Analytics</div>
-            
+            <div class="nav-item" onclick="switchPage('docs')" id="nav-docs">Documentation</div>
             <div class="nav-item" onclick="toggleTheme()" title="Toggle Dark Mode">🌗</div>
             <div class="nav-item" onclick="toggleLanguage()" id="lang-btn">EN</div>
         </div>
@@ -745,6 +819,61 @@
             <button class="start-btn" onclick="switchPage('timeline')" style="margin-top:40px; width:200px;" id="stat-back-btn">Back to Timeline</button>
         </div>
     </div>
+    <div id="docs-page" class="page-section">
+    <div class="doc-container">
+        <h1 class="stats-title" style="text-align:center; margin-bottom:10px;" id="doc-main-title">Architettura del Progetto</h1>
+        <p class="stats-subtitle" style="text-align:center; margin-bottom:40px;" id="doc-main-sub">Come funziona "Human Rights Evolution" dietro le quinte</p>
+
+        <div class="doc-section">
+            <h2 id="doc-sec1-title">1. Struttura "Single Page Application" (SPA)</h2>
+            <p id="doc-sec1-text1">
+                A differenza dei siti web tradizionali composti da molti file separati, questo progetto è stato costruito come un'unica entità digitale (SPA). 
+                Tutto il codice necessario (Dati Storici, Grafica, Logica) risiede in un singolo file.
+            </p>
+            <p id="doc-sec1-text2">
+                <strong>Perché questa scelta?</strong><br>
+                Questo garantisce la massima portabilità e preservazione digitale. Il progetto non richiede un database esterno o un server complesso per funzionare: basta un browser web qualsiasi.
+            </p>
+        </div>
+
+        <div class="doc-section">
+            <h2 id="doc-sec2-title">2. Il Database Storico (JSON)</h2>
+            <p id="doc-sec2-text1">
+                I dati storici non sono "disegnati" a mano sulla pagina. Sono organizzati in una struttura dati astratta chiamata <strong>JSON</strong> (JavaScript Object Notation).
+                Ogni trattato o evento è un oggetto che contiene le sue proprietà: anno, titolo, descrizione e, soprattutto, il suo "Genitore".
+            </p>
+            <p id="doc-sec2-text2">
+                <strong>Il concetto di Ereditarietà:</strong><br>
+                Nel codice, ogni diritto ha un campo <code>parent</code>. Ad esempio, la "Convenzione contro la Tortura" indica come genitore la "Dichiarazione del 1975". Il software legge queste relazioni e disegna automaticamente le linee di connessione.
+            </p>
+        </div>
+
+        <div class="doc-section">
+            <h2 id="doc-sec3-title">3. Generazione Procedurale della Timeline</h2>
+            <p id="doc-sec3-text">
+                La timeline non è un'immagine statica. Viene generata matematicamente ogni volta che si apre la pagina.
+                Un algoritmo calcola la posizione orizzontale di ogni evento basandosi sul suo anno:
+                <br><br>
+                <code>Posizione X = (Anno Evento - 1940) × Spazio Fisso</code>
+                <br><br>
+                Questo permette di avere una scala temporale scientificamente accurata. Se in futuro venissero aggiunti nuovi trattati al database, il sistema ridisegnerebbe automaticamente l'intera visualizzazione.
+            </p>
+        </div>
+
+        <div class="download-box">
+            <h3 style="margin-top:0;" id="doc-dl-title">Consulta il Codice Sorgente</h3>
+            <p style="margin-bottom:20px;" id="doc-dl-text">
+                Per una verifica tecnica approfondita, è possibile scaricare l'intero file sorgente del progetto.
+                Il file contiene sia la struttura HTML che la logica JavaScript descritta sopra.
+            </p>
+            <button class="download-btn" onclick="downloadSourceCode()" id="doc-dl-btn">
+                📥 Scarica file .html
+            </button>
+        </div>
+        
+        <br><br><br>
+    </div>
+</div>
     <script>
         // --- TRANSLATION DATA ---
         let currentLang = 'en';
@@ -756,10 +885,34 @@
                 project_title: "Human Rights Evolution",
                 author_prefix: "Project by",
                 intro_title: "About the Project",
-                intro_text_1: "This project presents a multi-level temporal visualization of the normative evolution of human rights from 1945 to the present day. It was developed to analyze how international law has expanded from the initial abstract declarations of the post-war period to complex, binding treaty systems that cover specific groups (women, children, persons with disabilities) and new challenges (environment, technology).",
-                intro_text_2: "The visualization allows users to explore the connections between historical events, the tenure of UN Secretary-Generals, and the adoption of key legal instruments. By visualizing the 'branches' of rights (Civil, Social, Collective), we can observe how the definition of what constitutes a 'human right' has been continuously renegotiated and expanded over decades.",
+                intro_text_1: "This project presents a multi-level temporal visualization of the normative evolution of human rights from 1945 to the present day. It was developed to analyze how international law has expanded from the initial abstract declarations of the post-war period to complex, binding treaty systems.",
+                intro_text_2: "The visualization allows users to explore the connections between historical events, the tenure of UN Secretary-Generals, and the adoption of key legal instruments. By visualizing the 'branches' of rights (Civil, Social, Collective), we can observe how the definition of what constitutes a 'human right' has been continuously renegotiated.",
                 timeline_btn: "Go to Timeline →",
+                nav_intro: "Introduction",
+                nav_timeline: "Timeline",
                 nav_stats: "Analytics",
+                nav_docs: "Documentation", // NUOVO
+                
+                // --- DOCUMENTATION PAGE TRANSLATIONS ---
+                doc_title: "Project Architecture",
+                doc_sub: "How 'Human Rights Evolution' works behind the scenes",
+                
+                doc_s1_t: "1. Single Page Application (SPA) Structure",
+                doc_s1_p1: "Unlike traditional websites composed of many separate files, this project was built as a single digital entity (SPA). All necessary code (Historical Data, Graphics, Logic) resides in a single file.",
+                doc_s1_p2: "<strong>Why this choice?</strong><br>This guarantees maximum portability and digital preservation. The project requires no external database or complex server to run: any web browser is sufficient.",
+                
+                doc_s2_t: "2. The Historical Database (JSON)",
+                doc_s2_p1: "Historical data is not drawn by hand. It is organized in an abstract data structure called <strong>JSON</strong>. Each treaty or event is an object containing its properties: year, title, description, and importantly, its 'Parent'.",
+                doc_s2_p2: "<strong>The Concept of Inheritance:</strong><br>In the code, every right has a `parent` field. For example, the 'Convention against Torture' points to the '1975 Declaration' as its parent. The software reads these relationships and automatically draws the connection lines.",
+                
+                doc_s3_t: "3. Procedural Timeline Generation",
+                doc_s3_p: "The timeline is not a static image. It is mathematically generated every time the page opens. An algorithm calculates the horizontal position based on the year:<br><br><code>X Position = (Event Year - 1940) × Fixed Space</code><br><br>This allows for a scientifically accurate time scale that auto-adjusts if new treaties are added.",
+                
+                doc_dl_t: "Inspect Source Code",
+                doc_dl_p: "For a deep technical verification, you can download the entire source file of the project. The file contains both the HTML structure and the JavaScript logic described above.",
+                doc_dl_btn: "📥 Download .html file",
+                // ----------------------------------------
+
                 stat_title: "Data Analysis",
                 stat_sub: "Quantitative breakdown of the Human Rights evolution (1945-2022)",
                 stat_c1_title: "Distribution by Rights Branch",
@@ -768,8 +921,7 @@
                 stat_c2_desc: "Highlights periods of intense normative activity, specifically post-Cold War (1990s).",
                 stat_back: "Back to Timeline",
                 chart_label_docs: "Documents Adopted",
-                nav_intro: "Introduction",
-                nav_timeline: "Timeline",
+                
                 legend_title: "Legend",
                 branches: "Branches",
                 civil: "Civil & Political",
@@ -812,11 +964,34 @@
                 project_title: "Evoluzione dei Diritti Umani",
                 author_prefix: "Elaborato di",
                 intro_title: "Il Progetto",
-                intro_text_1: "Questo progetto presenta una visualizzazione temporale multilivello dell'evoluzione normativa dei diritti umani dal 1945 a oggi. È stato sviluppato per analizzare come il diritto internazionale si sia espanso dalle iniziali dichiarazioni astratte del dopoguerra a complessi sistemi di trattati vincolanti che coprono gruppi specifici (donne, bambini, persone con disabilità) e nuove sfide (ambiente, tecnologia).",
-                intro_text_2: "La visualizzazione consente agli utenti di esplorare le connessioni tra eventi storici, il mandato dei Segretari Generali dell'ONU e l'adozione di strumenti legali chiave. Visualizzando i 'rami' dei diritti (Civili, Sociali, Collettivi), possiamo osservare come la definizione di ciò che costituisce un 'diritto umano' sia stata continuamente rinegoziata ed ampliata nel corso dei decenni.",
+                intro_text_1: "Questo progetto presenta una visualizzazione temporale multilivello dell'evoluzione normativa dei diritti umani dal 1945 a oggi. È stato sviluppato per analizzare come il diritto internazionale si sia espanso dalle iniziali dichiarazioni astratte del dopoguerra a complessi sistemi di trattati vincolanti.",
+                intro_text_2: "La visualizzazione consente agli utenti di esplorare le connessioni tra eventi storici, il mandato dei Segretari Generali dell'ONU e l'adozione di strumenti legali chiave. Visualizzando i 'rami' dei diritti (Civili, Sociali, Collettivi), possiamo osservare come la definizione di ciò che costituisce un 'diritto umano' sia stata continuamente rinegoziata.",
                 timeline_btn: "Vai alla Timeline →",
-                // --- NUOVE TRADUZIONI PER STATISTICHE ---
+                nav_intro: "Introduzione",
+                nav_timeline: "Timeline",
                 nav_stats: "Analisi Dati",
+                nav_docs: "Documentazione", // NUOVO
+
+                // --- TRADUZIONI PAGINA DOCS ---
+                doc_title: "Architettura del Progetto",
+                doc_sub: "Come funziona 'Human Rights Evolution' dietro le quinte",
+                
+                doc_s1_t: "1. Struttura 'Single Page Application' (SPA)",
+                doc_s1_p1: "A differenza dei siti web tradizionali composti da molti file separati, questo progetto è stato costruito come un'unica entità digitale (SPA). Tutto il codice necessario (Dati Storici, Grafica, Logica) risiede in un singolo file.",
+                doc_s1_p2: "<strong>Perché questa scelta?</strong><br>Questo garantisce la massima portabilità e preservazione digitale. Il progetto non richiede un database esterno o un server complesso per funzionare: basta un browser web qualsiasi.",
+                
+                doc_s2_t: "2. Il Database Storico (JSON)",
+                doc_s2_p1: "I dati storici non sono 'disegnati' a mano sulla pagina. Sono organizzati in una struttura dati astratta chiamata <strong>JSON</strong>. Ogni trattato o evento è un oggetto che contiene le sue proprietà: anno, titolo, descrizione e, soprattutto, il suo 'Genitore'.",
+                doc_s2_p2: "<strong>Il concetto di Ereditarietà:</strong><br>Nel codice, ogni diritto ha un campo <code>parent</code>. Ad esempio, la 'Convenzione contro la Tortura' indica come genitore la 'Dichiarazione del 1975'. Il software legge queste relazioni e disegna automaticamente le linee di connessione.",
+                
+                doc_s3_t: "3. Generazione Procedurale della Timeline",
+                doc_s3_p: "La timeline non è un'immagine statica. Viene generata matematicamente ogni volta che si apre la pagina. Un algoritmo calcola la posizione orizzontale in base all'anno:<br><br><code>Posizione X = (Anno Evento - 1940) × Spazio Fisso</code><br><br>Questo permette di avere una scala temporale scientificamente accurata che si adatta automaticamente.",
+                
+                doc_dl_t: "Consulta il Codice Sorgente",
+                doc_dl_p: "Per una verifica tecnica approfondita, è possibile scaricare l'intero file sorgente del progetto. Il file contiene sia la struttura HTML che la logica JavaScript descritta sopra.",
+                doc_dl_btn: "📥 Scarica file .html",
+                // ------------------------------
+
                 stat_title: "Analisi Dati",
                 stat_sub: "Ripartizione quantitativa dell'evoluzione dei diritti umani (1945-2022)",
                 stat_c1_title: "Distribuzione per Ramo",
@@ -825,9 +1000,7 @@
                 stat_c2_desc: "Evidenzia i periodi di intensa attività normativa, in particolare dopo la Guerra Fredda (anni '90).",
                 stat_back: "Torna alla Timeline",
                 chart_label_docs: "Documenti Adottati",
-                // ----------------------------------------
-                nav_intro: "Introduzione",
-                nav_timeline: "Timeline",
+                
                 legend_title: "Legenda",
                 branches: "Rami",
                 civil: "Civili & Politici",
@@ -1257,6 +1430,12 @@
                 // Disegna i grafici (con un piccolo ritardo per assicurarsi che il DOM sia pronto)
                 setTimeout(() => { renderCharts(); }, 100);
             }
+            // --- AGGIUNGI QUESTO ---
+else if (pageId === 'docs') {
+    document.getElementById('docs-page').classList.add('active');
+    document.getElementById('nav-docs').classList.add('active');
+    document.getElementById('ui-controls').style.display = 'none';
+}
         }
 
         function updateStaticText() {
@@ -1285,7 +1464,8 @@
             // Navigazione
             document.getElementById('nav-intro').innerText = dict[currentLang].nav_intro;
             document.getElementById('nav-timeline').innerText = dict[currentLang].nav_timeline;
-            document.getElementById('nav-stats').innerText = dict[currentLang].nav_stats; // NUOVO
+            document.getElementById('nav-stats').innerText = dict[currentLang].nav_stats;
+            document.getElementById('nav-docs').innerText = dict[currentLang].nav_docs; // NUOVO
 
             // Intro Page
             document.querySelector('#intro-uni-sub-1').innerText = dict[currentLang].uni_sub_1;
@@ -1297,7 +1477,7 @@
             document.querySelector('#intro-text-2').innerText = dict[currentLang].intro_text_2;
             document.querySelector('#intro-btn').innerText = dict[currentLang].timeline_btn;
 
-            // --- NUOVA PAGINA STATISTICHE ---
+            // Stats Page
             document.getElementById('stat-main-title').innerText = dict[currentLang].stat_title;
             document.getElementById('stat-main-sub').innerText = dict[currentLang].stat_sub;
             document.getElementById('stat-card1-title').innerText = dict[currentLang].stat_c1_title;
@@ -1305,8 +1485,27 @@
             document.getElementById('stat-card2-title').innerText = dict[currentLang].stat_c2_title;
             document.getElementById('stat-card2-desc').innerText = dict[currentLang].stat_c2_desc;
             document.getElementById('stat-back-btn').innerText = dict[currentLang].stat_back;
+
+            // --- DOCUMENTATION PAGE UPDATES (NUOVO) ---
+            document.getElementById('doc-main-title').innerText = dict[currentLang].doc_title;
+            document.getElementById('doc-main-sub').innerText = dict[currentLang].doc_sub;
             
-            // Se siamo nella pagina stats, rigenera i grafici per aggiornare le etichette interne
+            document.getElementById('doc-sec1-title').innerText = dict[currentLang].doc_s1_t;
+            document.getElementById('doc-sec1-text1').innerText = dict[currentLang].doc_s1_p1;
+            document.getElementById('doc-sec1-text2').innerHTML = dict[currentLang].doc_s1_p2; // innerHTML per i tag <strong>/br
+            
+            document.getElementById('doc-sec2-title').innerText = dict[currentLang].doc_s2_t;
+            document.getElementById('doc-sec2-text1').innerHTML = dict[currentLang].doc_s2_p1;
+            document.getElementById('doc-sec2-text2').innerHTML = dict[currentLang].doc_s2_p2;
+            
+            document.getElementById('doc-sec3-title').innerText = dict[currentLang].doc_s3_t;
+            document.getElementById('doc-sec3-text').innerHTML = dict[currentLang].doc_s3_p;
+            
+            document.getElementById('doc-dl-title').innerText = dict[currentLang].doc_dl_t;
+            document.getElementById('doc-dl-text').innerText = dict[currentLang].doc_dl_p;
+            document.getElementById('doc-dl-btn').innerText = dict[currentLang].doc_dl_btn;
+            // ------------------------------------------
+            
             if (document.getElementById('stats-page').classList.contains('active')) {
                 renderCharts();
             }
@@ -2100,7 +2299,26 @@
                 });
             }
         }
+    // --- FUNZIONE DOWNLOAD SORGENTE ---
+function downloadSourceCode() {
+    // Prende tutto il contenuto attuale della pagina (HTML + CSS + JS)
+    const htmlContent = document.documentElement.outerHTML;
+    
+    // Crea un 'Blob' (un file virtuale)
+    const blob = new Blob([htmlContent], {type: 'text/html'});
+    
+    // Crea un link temporaneo per il download
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "LorenzoCarbone_HumanRights_Source.html"; // Nome del file scaricato
+    
+    // Simula il click e pulisce
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
     </script>
 </body>
 </html>
+
 
